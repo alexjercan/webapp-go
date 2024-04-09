@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Posts</title>
+    </head>
+    <body>
+        <ul>
+            {{range .Posts}}<li>{{template "post-preview" .}}</li>{{else}}<div><strong>No Posts</strong></div>{{end}}
+        <ul>
+    </body>
+</html>
+
+{{define "post-preview"}}
+<a href="/posts/{{.Slug}}">{{.Name}}</a>
+{{end}}
