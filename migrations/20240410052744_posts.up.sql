@@ -1,0 +1,5 @@
+CREATE TABLE posts (
+    slug UUID PRIMARY KEY,
+    name VARCHAR(128) NOT NULL DEFAULT '',
+    description VARCHAR(512) NOT NULL DEFAULT ''
+);
