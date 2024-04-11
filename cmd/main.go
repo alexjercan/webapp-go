@@ -27,10 +27,10 @@ func main() {
 	router.LoadHTMLGlob("templates/*")
 
 	router.GET("/api/posts/:slug", postsController.GetPost)
-	// router.GET("/api/posts", getAllPosts)
-	// router.POST("/api/posts", createPost)
-	// router.PUT("/api/posts/:slug", updatePost)
-	// router.DELETE("/api/posts/:slug", deletePost)
+	router.GET("/api/posts", postsController.GetPosts)
+	router.POST("/api/posts", postsController.CreatePost)
+	router.PUT("/api/posts/:slug", postsController.UpdatePost)
+	router.DELETE("/api/posts/:slug", postsController.DeletePost)
 
 	router.GET("/", viewController.GetIndexPage)
 	router.GET("/posts/:slug", viewController.GetPostPage)

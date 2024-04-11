@@ -4,14 +4,37 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Posts</title>
+        <script src="https://unpkg.com/htmx.org@1.9.11" integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous"></script>
+        <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
     </head>
     <body>
         <ul>
             {{range .Posts}}<li>{{template "post-preview" .}}</li>{{else}}<div><strong>No Posts</strong></div>{{end}}
         <ul>
+        <div>
+            {{template "post-create"}}
+        </div>
     </body>
 </html>
 
 {{define "post-preview"}}
 <a href="/posts/{{.Slug}}">{{.Name}}</a>
+{{end}}
+
+{{define "post-create"}}
+<form
+    name="post-form"
+    hx-post="/api/posts"
+    hx-target="#posts"
+    hx-swap="innerHtml"
+    hx-trigger="submit"
+    hx-ext="json-enc"
+>
+    <label for="post-name">Name:</label><br>
+    <input type="text" id="post-name" name="name"><br>
+    <label for="post-description">Description:</label><br>
+    <input type="text" id="post-description" name="description">
+    <button type="submit">Submit</button>
+</form>
+<div id="posts" />
 {{end}}

@@ -1,6 +1,6 @@
 # WebApp in Go
 
-Simple web app in go + htmx to learn go.
+Simple web app in go + postgresql + htmx to learn go.
 
 ## Quickstart
 

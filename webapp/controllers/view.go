@@ -27,7 +27,10 @@ func (p viewController) GetIndexPage(c *gin.Context) {
     var posts []models.Post
     err := p.db.NewSelect().Model(&posts).Scan(c)
 
-    if (err != nil) {}
+    if (err != nil) {
+        c.AbortWithError(http.StatusInternalServerError, err)
+        return
+    }
 
 	c.HTML(http.StatusOK, "index.html", gin.H{
 		"Posts": posts,
@@ -37,11 +40,15 @@ func (p viewController) GetIndexPage(c *gin.Context) {
 func (p viewController) GetPostPage(c *gin.Context) {
 	slug, err := uuid.Parse(c.Param("slug"))
 	if err != nil {
-		c.String(http.StatusBadRequest, err.Error())
+		c.AbortWithError(http.StatusBadRequest, err)
+        return
 	}
 
     post := new(models.Post)
-    err = p.db.NewSelect().Model(post).Where("slug = ?", slug).Scan(c)
+	if err := p.db.NewSelect().Model(post).Where("slug = ?", slug).Scan(c); err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
 
 	c.HTML(http.StatusOK, "post.html", gin.H{
 		"Post": post,
