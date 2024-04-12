@@ -15,6 +15,11 @@ import (
 )
 
 func main() {
+    cfg, err := webapp.LoadConfig()
+    if err != nil {
+        panic(err)
+    }
+
 	app := &cli.App{
 		Name: "migrations",
         Usage: "run migrations stuff",
@@ -24,7 +29,7 @@ func main() {
 				Usage: "create migration tables",
 				Action: func(c *cli.Context) error {
 					ctx := context.Background()
-					db := webapp.DBConnection()
+					db := webapp.DBConnection(cfg)
 
 					migrator := migrate.NewMigrator(db, migrations.Migrations)
 					return migrator.Init(ctx)
@@ -35,7 +40,7 @@ func main() {
 				Usage: "migrate database",
 				Action: func(c *cli.Context) error {
 					ctx := context.Background()
-					db := webapp.DBConnection()
+					db := webapp.DBConnection(cfg)
 
 					migrator := migrate.NewMigrator(db, migrations.Migrations)
 
@@ -58,7 +63,7 @@ func main() {
 				Usage: "rollback the last migration group",
 				Action: func(c *cli.Context) error {
 					ctx := context.Background()
-					db := webapp.DBConnection()
+					db := webapp.DBConnection(cfg)
 
 					migrator := migrate.NewMigrator(db, migrations.Migrations)
 
@@ -81,7 +86,7 @@ func main() {
 				Usage: "lock migrations",
 				Action: func(c *cli.Context) error {
 					ctx := context.Background()
-					db := webapp.DBConnection()
+					db := webapp.DBConnection(cfg)
 
 					migrator := migrate.NewMigrator(db, migrations.Migrations)
 					return migrator.Lock(ctx)
@@ -92,7 +97,7 @@ func main() {
 				Usage: "unlock migrations",
 				Action: func(c *cli.Context) error {
 					ctx := context.Background()
-					db := webapp.DBConnection()
+					db := webapp.DBConnection(cfg)
 
 					migrator := migrate.NewMigrator(db, migrations.Migrations)
 					return migrator.Unlock(ctx)
@@ -103,7 +108,7 @@ func main() {
 				Usage: "create Go migration",
 				Action: func(c *cli.Context) error {
 					ctx := context.Background()
-					db := webapp.DBConnection()
+					db := webapp.DBConnection(cfg)
 
 					migrator := migrate.NewMigrator(db, migrations.Migrations)
 
@@ -122,7 +127,7 @@ func main() {
 				Usage: "create up and down SQL migrations",
 				Action: func(c *cli.Context) error {
 					ctx := context.Background()
-					db := webapp.DBConnection()
+					db := webapp.DBConnection(cfg)
 
 					migrator := migrate.NewMigrator(db, migrations.Migrations)
 
@@ -144,7 +149,7 @@ func main() {
 				Usage: "print migrations status",
 				Action: func(c *cli.Context) error {
 					ctx := context.Background()
-					db := webapp.DBConnection()
+					db := webapp.DBConnection(cfg)
 
 					migrator := migrate.NewMigrator(db, migrations.Migrations)
 
@@ -164,7 +169,7 @@ func main() {
 				Usage: "mark migrations as applied without actually running them",
 				Action: func(c *cli.Context) error {
 					ctx := context.Background()
-					db := webapp.DBConnection()
+					db := webapp.DBConnection(cfg)
 
 					migrator := migrate.NewMigrator(db, migrations.Migrations)
 

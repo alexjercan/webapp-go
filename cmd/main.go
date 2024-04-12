@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"webapp-go/webapp"
 	"webapp-go/webapp/controllers"
 
@@ -15,7 +16,12 @@ type User struct {
 }
 
 func main() {
-    db := webapp.DBConnection()
+    cfg, err := webapp.LoadConfig()
+    if err != nil {
+        panic(err)
+    }
+
+    db := webapp.DBConnection(cfg)
 
     postsController := controllers.NewPostsController(db)
     viewController := controllers.NewViewController(db)
@@ -37,6 +43,6 @@ func main() {
 
 	// By default it serves on :8080 unless a
 	// PORT environment variable was defined.
-	router.Run()
+    router.Run(fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port))
 	// router.Run(":3000") for a hard coded port
 }
