@@ -3,20 +3,16 @@ package main
 import (
 	"fmt"
 	"webapp-go/webapp"
+	"webapp-go/webapp/config"
 	"webapp-go/webapp/controllers"
 
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
-type User struct {
-	Id       uuid.UUID `json:"id"`
-	UserName string    `json:"username" binding:"required"`
-	Name     string    `json:"name"`
-}
-
 func main() {
-    cfg, err := webapp.LoadConfig()
+    cfg, err := config.LoadConfig()
     if err != nil {
         panic(err)
     }
@@ -25,10 +21,14 @@ func main() {
 
     postsController := controllers.NewPostsController(db)
     viewController := controllers.NewViewController(db)
+    authController := controllers.NewAuthController(cfg)
 
 	// Creates a gin router with default middleware:
 	// logger and recovery (crash-free) middleware
 	router := gin.Default()
+
+	store := cookie.NewStore([]byte(cfg.AuthStore.Secret))
+	router.Use(sessions.Sessions(cfg.AuthStore.Name, store))
 
 	router.LoadHTMLGlob("templates/*")
 
@@ -40,6 +40,9 @@ func main() {
 
 	router.GET("/", viewController.GetIndexPage)
 	router.GET("/posts/:slug", viewController.GetPostPage)
+
+    router.GET("/auth/login", authController.Login)
+    router.GET("/auth/callback", authController.Callback)
 
 	// By default it serves on :8080 unless a
 	// PORT environment variable was defined.

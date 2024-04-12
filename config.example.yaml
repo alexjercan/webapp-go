@@ -5,3 +5,10 @@ database:
   password:
   database:
   insecure:
+oauth:
+  clientId:
+  clientSecret:
+  redirectUri:
+authStore:
+  name:
+  secret:

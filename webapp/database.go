@@ -3,13 +3,14 @@ package webapp
 import (
 	"database/sql"
 	"fmt"
+	"webapp-go/webapp/config"
 
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
 )
 
-func DBConnection(cfg Config) *bun.DB {
+func DBConnection(cfg config.Config) *bun.DB {
     pgconn := pgdriver.NewConnector(
         pgdriver.WithAddr(fmt.Sprintf("%s:%d", cfg.Database.Host, cfg.Database.Port)),
         pgdriver.WithUser(cfg.Database.User),

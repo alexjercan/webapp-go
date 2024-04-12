@@ -1,12 +1,12 @@
-package webapp
+package config
 
 import "github.com/ilyakaznacheev/cleanenv"
 
 type Config struct {
 	ConfigPath string `env:"CONFIG_PATH" env-default:"config.yaml"`
 	Server     struct {
-        Host string `env:"HOST" env-default:""`
-		Port int `env:"PORT" env-default:"8080"`
+		Host string `env:"HOST" env-default:""`
+		Port int    `env:"PORT" env-default:"8080"`
 	}
 	Database struct {
 		Host     string `yaml:"host"`
@@ -16,6 +16,15 @@ type Config struct {
 		Database string `yaml:"database"`
 		Insecure bool   `yaml:"insecure"`
 	} `yaml:"database"`
+	OAuth struct {
+		ClientId     string `yaml:"clientId"`
+		ClientSecret string `yaml:"clientSecret"`
+        RedirectUri  string `yaml:"redirectUri"`
+	} `yaml:"oauth"`
+	AuthStore struct {
+        Name string `yaml:"name"`
+		Secret string `yaml:"secret"`
+	} `yaml:"authStore"`
 }
 
 func LoadConfig() (cfg Config, err error) {

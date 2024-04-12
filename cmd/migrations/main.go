@@ -6,8 +6,9 @@ import (
 	"log"
 	"os"
 	"strings"
+	"webapp-go/migrations"
 	"webapp-go/webapp"
-    "webapp-go/migrations"
+	"webapp-go/webapp/config"
 
 	"github.com/uptrace/bun/migrate"
 
@@ -15,7 +16,7 @@ import (
 )
 
 func main() {
-    cfg, err := webapp.LoadConfig()
+    cfg, err := config.LoadConfig()
     if err != nil {
         panic(err)
     }
