@@ -24,34 +24,34 @@ func NewUserRepository(db *bun.DB) UsersRepository {
 	return usersRepository{db}
 }
 
-func (p usersRepository) GetUser(c context.Context, id uuid.UUID) (user models.User, err error) {
-	err = p.db.NewSelect().Model(&user).Where("id = ?", id).Scan(c);
+func (this usersRepository) GetUser(c context.Context, id uuid.UUID) (user models.User, err error) {
+	err = this.db.NewSelect().Model(&user).Where("id = ?", id).Scan(c);
 
     return
 }
 
-func (p usersRepository) GetUsers(c context.Context) (users []models.User, err error) {
-	err = p.db.NewSelect().Model(&users).Scan(c)
+func (this usersRepository) GetUsers(c context.Context) (users []models.User, err error) {
+	err = this.db.NewSelect().Model(&users).Scan(c)
 
     return
 }
 
-func (p usersRepository) CreateUser(c context.Context, user models.User) (models.User, error) {
-	_, err := p.db.NewInsert().Model(&user).Exec(c)
+func (this usersRepository) CreateUser(c context.Context, user models.User) (models.User, error) {
+	_, err := this.db.NewInsert().Model(&user).Exec(c)
 
     return user, err
 }
 
-func (p usersRepository) UpdateUser(c context.Context, id uuid.UUID, user models.User) (models.User, error) {
+func (this usersRepository) UpdateUser(c context.Context, id uuid.UUID, user models.User) (models.User, error) {
 	user.ID = id
 
-    _, err := p.db.NewUpdate().Model(&user).OmitZero().WherePK().Exec(c)
+    _, err := this.db.NewUpdate().Model(&user).OmitZero().WherePK().Exec(c)
 
     return user, err
 }
 
-func (p usersRepository) DeleteUser(c context.Context, id uuid.UUID) (uuid.UUID, error) {
-    _, err := p.db.NewDelete().Model((*models.User)(nil)).Where("id = ?", id).Exec(c)
+func (this usersRepository) DeleteUser(c context.Context, id uuid.UUID) (uuid.UUID, error) {
+    _, err := this.db.NewDelete().Model((*models.User)(nil)).Where("id = ?", id).Exec(c)
 
     return id, err
 }

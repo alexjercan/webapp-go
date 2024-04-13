@@ -26,14 +26,14 @@ func NewPostsController(repo repositories.PostsRepository) PostsController {
 	return postsController{repo}
 }
 
-func (p postsController) GetPost(c *gin.Context) {
+func (this postsController) GetPost(c *gin.Context) {
 	slug, err := uuid.Parse(c.Param("slug"))
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-    post, err := p.repo.GetPost(c, slug)
+    post, err := this.repo.GetPost(c, slug)
     if err != nil {
 		c.Status(http.StatusNotFound)
 		return
@@ -42,8 +42,8 @@ func (p postsController) GetPost(c *gin.Context) {
 	c.JSON(http.StatusOK, post)
 }
 
-func (p postsController) GetPosts(c *gin.Context) {
-	posts, err := p.repo.GetPosts(c)
+func (this postsController) GetPosts(c *gin.Context) {
+	posts, err := this.repo.GetPosts(c)
 
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
@@ -53,14 +53,14 @@ func (p postsController) GetPosts(c *gin.Context) {
 	c.JSON(http.StatusOK, posts)
 }
 
-func (p postsController) CreatePost(c *gin.Context) {
+func (this postsController) CreatePost(c *gin.Context) {
 	var dto models.PostDTO
 	if err := c.Bind(&dto); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	post, err := p.repo.CreatePost(c, models.NewPost(dto))
+	post, err := this.repo.CreatePost(c, models.NewPost(dto))
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
@@ -69,7 +69,7 @@ func (p postsController) CreatePost(c *gin.Context) {
 	c.JSON(http.StatusCreated, post)
 }
 
-func (p postsController) UpdatePost(c *gin.Context) {
+func (this postsController) UpdatePost(c *gin.Context) {
 	slug, err := uuid.Parse(c.Param("slug"))
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
@@ -82,7 +82,7 @@ func (p postsController) UpdatePost(c *gin.Context) {
 		return
 	}
 
-    post, err := p.repo.UpdatePost(c, slug, models.NewPost(dto))
+    post, err := this.repo.UpdatePost(c, slug, models.NewPost(dto))
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -91,14 +91,14 @@ func (p postsController) UpdatePost(c *gin.Context) {
 	c.JSON(http.StatusOK, post)
 }
 
-func (p postsController) DeletePost(c *gin.Context) {
+func (this postsController) DeletePost(c *gin.Context) {
 	slug, err := uuid.Parse(c.Param("slug"))
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	_, err = p.repo.DeletePost(c, slug)
+	_, err = this.repo.DeletePost(c, slug)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return

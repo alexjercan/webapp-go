@@ -6,6 +6,7 @@ import (
 	"webapp-go/webapp/config"
 	"webapp-go/webapp/controllers"
 	"webapp-go/webapp/repositories"
+	"webapp-go/webapp/services"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -23,9 +24,11 @@ func main() {
     postsRepository := repositories.NewPostsRepository(db)
     usersRepository := repositories.NewUserRepository(db)
 
+    authService := services.NewAuthService(cfg)
+
     postsController := controllers.NewPostsController(postsRepository)
-    viewController := controllers.NewViewController(postsRepository)
-    authController := controllers.NewAuthController(cfg, usersRepository)
+    viewController := controllers.NewViewController(postsRepository, authService)
+    authController := controllers.NewAuthController(cfg, authService, usersRepository)
 
 	// Creates a gin router with default middleware:
 	// logger and recovery (crash-free) middleware

@@ -24,6 +24,6 @@ type Post struct {
 	Author      *User     `bun:"rel:belongs-to,join:author_id=id"`
 }
 
-func NewPost(dto PostDTO) Post {
-	return Post{Name: dto.Name, Description: dto.Description}
+func NewPost(p PostDTO) Post {
+	return Post{Name: p.Name, Description: p.Description}
 }
