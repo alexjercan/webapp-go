@@ -54,13 +54,13 @@ func (p postsController) GetPosts(c *gin.Context) {
 }
 
 func (p postsController) CreatePost(c *gin.Context) {
-	var post models.Post
-	if err := c.Bind(&post); err != nil {
+	var dto models.PostDTO
+	if err := c.Bind(&dto); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	post, err := p.repo.CreatePost(c, post)
+	post, err := p.repo.CreatePost(c, models.NewPost(dto))
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
@@ -76,19 +76,19 @@ func (p postsController) UpdatePost(c *gin.Context) {
 		return
 	}
 
-	var post models.Post
-	if err := c.Bind(&post); err != nil {
+	var dto models.PostDTO
+	if err := c.Bind(&dto); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	_, err = p.repo.UpdatePost(c, slug, post)
+    post, err := p.repo.UpdatePost(c, slug, models.NewPost(dto))
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, post)
 }
 
 func (p postsController) DeletePost(c *gin.Context) {

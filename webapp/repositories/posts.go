@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"context"
-	"fmt"
 	"webapp-go/webapp/models"
 
 	"github.com/google/uuid"

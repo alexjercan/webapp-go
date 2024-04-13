@@ -12,6 +12,7 @@ import (
 
 	"webapp-go/webapp/config"
 	"webapp-go/webapp/models"
+	"webapp-go/webapp/repositories"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -24,10 +25,11 @@ type AuthController interface {
 
 type authController struct {
 	cfg config.Config
+    repo repositories.UsersRepository
 }
 
-func NewAuthController(cfg config.Config) AuthController {
-	return authController{cfg}
+func NewAuthController(cfg config.Config, repo repositories.UsersRepository) AuthController {
+	return authController{cfg, repo}
 }
 
 func generateRandomState() (state string, err error) {
@@ -123,6 +125,48 @@ func (p authController) Callback(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
         return
     }
+
+    accessToken := session.Get("access_token").(string)
+
+    url = "https://api.github.com/user"
+
+    client = &http.Client{}
+    req, err = http.NewRequest("GET", url, bytes.NewBuffer([]byte{}))
+    if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+        return
+    }
+    req.Header.Add("Accept", "application/json")
+    req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+
+    res, err = client.Do(req)
+    if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+        return
+    }
+
+    defer res.Body.Close()
+
+    body, err = io.ReadAll(res.Body)
+    if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+        return
+    }
+
+    dto := models.GitHubUser{}
+    err = json.Unmarshal(body, &dto)
+    if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+        return
+    }
+
+    user, err := p.repo.CreateUser(c, models.NewUser(dto))
+    if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+        return
+    }
+
+    fmt.Println(user)
 
     c.Redirect(http.StatusTemporaryRedirect, "/user")
 }

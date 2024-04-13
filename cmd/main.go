@@ -21,10 +21,11 @@ func main() {
     db := webapp.DBConnection(cfg)
 
     postsRepository := repositories.NewPostsRepository(db)
+    usersRepository := repositories.NewUserRepository(db)
 
     postsController := controllers.NewPostsController(postsRepository)
     viewController := controllers.NewViewController(postsRepository)
-    authController := controllers.NewAuthController(cfg)
+    authController := controllers.NewAuthController(cfg, usersRepository)
 
 	// Creates a gin router with default middleware:
 	// logger and recovery (crash-free) middleware
