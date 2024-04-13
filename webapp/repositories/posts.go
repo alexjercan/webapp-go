@@ -25,13 +25,13 @@ func NewPostsRepository(db *bun.DB) PostsRepository {
 }
 
 func (this postsRepository) GetPost(c context.Context, slug uuid.UUID) (post models.Post, err error) {
-	err = this.db.NewSelect().Model(&post).Where("slug = ?", slug).Scan(c);
+	err = this.db.NewSelect().Model(&post).Relation("Author").Where("slug = ?", slug).Scan(c);
 
     return
 }
 
 func (this postsRepository) GetPosts(c context.Context) (posts []models.Post, err error) {
-	err = this.db.NewSelect().Model(&posts).Scan(c)
+	err = this.db.NewSelect().Model(&posts).Relation("Author").Scan(c)
 
     return
 }

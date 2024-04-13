@@ -10,6 +10,7 @@ import (
 
 type UsersRepository interface {
 	GetUser(c context.Context, id uuid.UUID) (models.User, error)
+    GetUserByLogin(c context.Context, githubUsername string) (models.User, error)
 	GetUsers(c context.Context) ([]models.User, error)
 	CreateUser(c context.Context, user models.User) (models.User, error)
 	UpdateUser(c context.Context, id uuid.UUID, user models.User) (models.User, error)
@@ -26,6 +27,12 @@ func NewUserRepository(db *bun.DB) UsersRepository {
 
 func (this usersRepository) GetUser(c context.Context, id uuid.UUID) (user models.User, err error) {
 	err = this.db.NewSelect().Model(&user).Where("id = ?", id).Scan(c);
+
+    return
+}
+
+func (this usersRepository) GetUserByLogin(c context.Context, githubUsername string) (user models.User, err error) {
+	err = this.db.NewSelect().Model(&user).Where("github_username = ?", githubUsername).Scan(c);
 
     return
 }

@@ -1,20 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Posts</title>
-        <script src="https://unpkg.com/htmx.org@1.9.11" integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous"></script>
-        <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
-    </head>
-    <body>
-        <ul>
-            {{range .Posts}}<li>{{template "post-preview" .}}</li>{{else}}<div><strong>No Posts</strong></div>{{end}}
-        <ul>
-        <div>
-            {{template "post-create"}}
-        </div>
-    </body>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Posts</title>
+    <script src="https://unpkg.com/htmx.org@1.9.11"
+        integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0"
+        crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+</head>
+
+<body>
+    <a href="/user">Profile</a>
+    <ul> {{range .Posts}}<li>{{template "post-preview" .}}</li>{{else}}<div><strong>No Posts</strong></div>{{end}} </ul>
+    <div> {{template "post-create"}} </div>
+
+    <script>
+        document.addEventListener("htmx:afterRequest", function (event) {
+            console.log(event)
+            if (event.detail.target.id === "post-create-form") {
+                window.location.href = "/"
+            }
+        })
+    </script>
+</body>
+
 </html>
 
 {{define "post-preview"}}
@@ -22,19 +33,11 @@
 {{end}}
 
 {{define "post-create"}}
-<form
-    name="post-form"
-    hx-post="/api/posts"
-    hx-target="#posts"
-    hx-swap="innerHtml"
-    hx-trigger="submit"
-    hx-ext="json-enc"
->
+<form id="post-create-form" name="post-form" hx-post="/api/posts" hx-trigger="submit" hx-ext="json-enc">
     <label for="post-name">Name:</label><br>
     <input type="text" id="post-name" name="name"><br>
     <label for="post-description">Description:</label><br>
     <input type="text" id="post-description" name="description">
     <button type="submit">Submit</button>
 </form>
-<div id="posts" />
 {{end}}

@@ -21,9 +21,9 @@ type Post struct {
 	CreatedAt   time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp" json:"createdAt"`
 	AuthorID    uuid.UUID `bun:"author_id,type:uuid,notnull" json:"authorId"`
 
-	Author      *User     `bun:"rel:belongs-to,join:author_id=id"`
+	Author      *User     `bun:"rel:belongs-to,join:author_id=id" json:"author"`
 }
 
-func NewPost(p PostDTO) Post {
-	return Post{Name: p.Name, Description: p.Description}
+func NewPost(authorId uuid.UUID, p PostDTO) Post {
+	return Post{Name: p.Name, Description: p.Description, AuthorID: authorId}
 }

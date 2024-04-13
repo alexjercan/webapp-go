@@ -25,6 +25,9 @@ type Config struct {
         Name string `yaml:"name"`
 		Secret string `yaml:"secret"`
 	} `yaml:"authStore"`
+    JWT struct {
+        Secret string `yaml:"secret"`
+    } `yaml:"jwt"`
 }
 
 func LoadConfig() (cfg Config, err error) {

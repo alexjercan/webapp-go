@@ -1,17 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Post</title>
-    </head>
-    <body>
-        {{template "user-view" .User}}
-    </body>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>User</title>
+    <script src="https://unpkg.com/htmx.org@1.9.11"
+        integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0"
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <a href="/">Home</a>
+    {{template "user-view" .User}}
+</body>
+
 </html>
 
 {{define "user-view"}}
 <h1>{{.Name}}</h1>
+
+<h2>API Key</h2>
+<div id="api-key"></div>
+<button hx-get="/api/bearer" hx-target="#api-key">Generate API Key</button>
 {{end}}
-
-

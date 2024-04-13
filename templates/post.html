@@ -1,17 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Post</title>
-    </head>
-    <body>
-        {{template "post-view" .Post}}
-    </body>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Post</title>
+    <script src="https://unpkg.com/htmx.org@1.9.11"
+        integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0"
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <a href="/">Home</a>
+    {{template "post-view" .Post}}
+    <button id="delete-post-button" hx-delete="/api/posts/{{.Post.Slug}}" hx-confirm="Are you sure?">Delete</button>
+
+    <script>
+        document.addEventListener("htmx:afterRequest", function (event) {
+            if (event.detail.target.id === "delete-post-button") {
+                window.location.href = "/"
+            }
+        })
+    </script>
+</body>
+
 </html>
 
 {{define "post-view"}}
 <h1>{{.Name}}</h1>
 <div>{{.Description}}</div>
+<div>Author: {{.Author.Name}}</div>
 {{end}}
-

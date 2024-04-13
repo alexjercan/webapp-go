@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	"webapp-go/webapp/middlewares"
 	"webapp-go/webapp/models"
 	"webapp-go/webapp/repositories"
 
@@ -60,7 +61,13 @@ func (this postsController) CreatePost(c *gin.Context) {
 		return
 	}
 
-	post, err := this.repo.CreatePost(c, models.NewPost(dto))
+    userId, exists := c.Get(middlewares.USER_ID_KEY)
+    if !exists {
+        c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+        return
+    }
+
+	post, err := this.repo.CreatePost(c, models.NewPost(userId.(uuid.UUID), dto))
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
@@ -82,7 +89,13 @@ func (this postsController) UpdatePost(c *gin.Context) {
 		return
 	}
 
-    post, err := this.repo.UpdatePost(c, slug, models.NewPost(dto))
+    userId, exists := c.Get(middlewares.USER_ID_KEY)
+    if !exists {
+        c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+        return
+    }
+
+    post, err := this.repo.UpdatePost(c, slug, models.NewPost(userId.(uuid.UUID), dto))
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -97,6 +110,23 @@ func (this postsController) DeletePost(c *gin.Context) {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
+
+    userId, exists := c.Get(middlewares.USER_ID_KEY)
+    if !exists {
+        c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+        return
+    }
+
+    post, err := this.repo.GetPost(c, slug)
+    if err != nil {
+        c.Status(http.StatusNotFound)
+        return
+    }
+
+    if post.AuthorID != userId.(uuid.UUID) {
+        c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+        return
+    }
 
 	_, err = this.repo.DeletePost(c, slug)
 	if err != nil {
