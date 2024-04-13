@@ -4,10 +4,10 @@ import (
 	"net/http"
 
 	"webapp-go/webapp/models"
+	"webapp-go/webapp/repositories"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/uptrace/bun"
 )
 
 type PostsController interface {
@@ -19,11 +19,11 @@ type PostsController interface {
 }
 
 type postsController struct {
-	db *bun.DB
+	repo repositories.PostsRepository
 }
 
-func NewPostsController(db *bun.DB) PostsController {
-	return postsController{db}
+func NewPostsController(repo repositories.PostsRepository) PostsController {
+	return postsController{repo}
 }
 
 func (p postsController) GetPost(c *gin.Context) {
@@ -33,18 +33,17 @@ func (p postsController) GetPost(c *gin.Context) {
 		return
 	}
 
-	post := new(models.Post)
-	if err := p.db.NewSelect().Model(post).Where("slug = ?", slug).Scan(c); err != nil {
+    post, err := p.repo.GetPost(c, slug)
+    if err != nil {
 		c.Status(http.StatusNotFound)
 		return
-	}
+    }
 
 	c.JSON(http.StatusOK, post)
 }
 
 func (p postsController) GetPosts(c *gin.Context) {
-	var posts []models.Post
-	err := p.db.NewSelect().Model(&posts).Scan(c)
+	posts, err := p.repo.GetPosts(c)
 
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
@@ -61,7 +60,7 @@ func (p postsController) CreatePost(c *gin.Context) {
 		return
 	}
 
-	_, err := p.db.NewInsert().Model(&post).Exec(c)
+	post, err := p.repo.CreatePost(c, post)
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
@@ -83,9 +82,7 @@ func (p postsController) UpdatePost(c *gin.Context) {
 		return
 	}
 
-	post.Slug = slug
-
-	_, err = p.db.NewUpdate().Model(&post).OmitZero().WherePK().Exec(c)
+	_, err = p.repo.UpdatePost(c, slug, post)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -101,7 +98,7 @@ func (p postsController) DeletePost(c *gin.Context) {
 		return
 	}
 
-	_, err = p.db.NewDelete().Model((*models.Post)(nil)).Where("slug = ?", slug).Exec(c)
+	_, err = p.repo.DeletePost(c, slug)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return

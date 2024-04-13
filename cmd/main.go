@@ -5,6 +5,7 @@ import (
 	"webapp-go/webapp"
 	"webapp-go/webapp/config"
 	"webapp-go/webapp/controllers"
+	"webapp-go/webapp/repositories"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -19,8 +20,10 @@ func main() {
 
     db := webapp.DBConnection(cfg)
 
-    postsController := controllers.NewPostsController(db)
-    viewController := controllers.NewViewController(db)
+    postsRepository := repositories.NewPostsRepository(db)
+
+    postsController := controllers.NewPostsController(postsRepository)
+    viewController := controllers.NewViewController(postsRepository)
     authController := controllers.NewAuthController(cfg)
 
 	// Creates a gin router with default middleware:
@@ -39,6 +42,7 @@ func main() {
 	router.DELETE("/api/posts/:slug", postsController.DeletePost)
 
 	router.GET("/", viewController.GetIndexPage)
+	router.GET("/user", viewController.GetUserPage)
 	router.GET("/posts/:slug", viewController.GetPostPage)
 
     router.GET("/auth/login", authController.Login)

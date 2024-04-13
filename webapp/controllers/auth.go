@@ -118,5 +118,11 @@ func (p authController) Callback(c *gin.Context) {
         return
     }
 
-    c.Redirect(http.StatusTemporaryRedirect, "/")
+    session.Set("access_token", token.AccessToken)
+    if err := session.Save(); err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+        return
+    }
+
+    c.Redirect(http.StatusTemporaryRedirect, "/user")
 }
