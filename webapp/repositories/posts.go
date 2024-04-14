@@ -25,7 +25,7 @@ func NewPostsRepository(db *bun.DB) PostsRepository {
 }
 
 func (this postsRepository) GetPost(c context.Context, slug uuid.UUID) (post models.Post, err error) {
-	err = this.db.NewSelect().Model(&post).Relation("Author").Where("slug = ?", slug).Scan(c);
+	err = this.db.NewSelect().Model(&post).Relation("Author").Relation("Documents").Where("slug = ?", slug).Scan(c);
 
     return
 }

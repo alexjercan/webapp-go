@@ -15,6 +15,11 @@
     {{template "post-view" .Post}}
     <button id="delete-post-button" hx-delete="/api/posts/{{.Post.Slug}}" hx-confirm="Are you sure?">Delete</button>
 
+    <form id="file-upload-form" hx-encoding="multipart/form-data" hx-post="/api/posts/{{.Post.Slug}}/documents">
+        <input type="file" name="file" multiple>
+        <button>Upload</button>
+    </form>
+
     <script>
         document.addEventListener("htmx:afterRequest", function (event) {
             if (event.detail.target.id === "delete-post-button") {
@@ -30,4 +35,12 @@
 <h1>{{.Name}}</h1>
 <div>{{.Description}}</div>
 <div>Author: {{.Author.Name}}</div>
+
+<h2>Documents</h2>
+{{range .Documents}}<li>{{template "document-view" .}}</li>{{else}}<div><strong>No Documents</strong></div>{{end}}
+{{end}}
+
+{{define "document-view"}}
+<h3>{{.Filename}}</h3>
+<pre>{{.ParseContent}}</pre>
 {{end}}
