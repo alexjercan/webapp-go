@@ -69,7 +69,7 @@
             <h1 class="text-2xl font-bold text-gray-800">Settings</h1>
         </div>
         <div class="py-4">
-            <form id="file-upload-form" hx-encoding="multipart/form-data" hx-post="/api/posts/{{.Slug}}/documents">
+            <form id="file-upload-form" hx-encoding="multipart/form-data" hx-post="/api/posts/{{.Post.Slug}}/documents">
 
                 <label class="block text-sm font-medium leading-6 text-gray-900" for="post-file-input">Upload
                     file</label>
@@ -82,8 +82,8 @@
 
         {{if .IsAuthor}}
         <div class="py-4">
-            <button id="delete-post-button"
-                class="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Delete</button>
+            <a id="delete-post-button" type="button" hx-delete="/api/posts/{{.Post.Slug}}"
+                class="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Delete</a>
         </div>
         {{end}}
     </div>
@@ -103,7 +103,7 @@
 
         <button id="delete-document-button"
             class="rounded-md bg-red-500 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
-            hx-delete="/api/posts/{{.PostSlug}}/documents/{{.ID}}">Delete</button>
+            hx-delete="/api/posts/{{.Document.PostSlug}}/documents/{{.Document.ID}}">Delete</button>
         {{end}}
     </div>
 </div>
