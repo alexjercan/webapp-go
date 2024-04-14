@@ -9,7 +9,7 @@ import (
 
 type PostDTO struct {
 	Name        string `json:"name"`
-	Description string `json:"description" binding:"required"`
+	Description string `json:"description"`
 }
 
 type Post struct {
@@ -27,4 +27,8 @@ type Post struct {
 
 func NewPost(authorId uuid.UUID, p PostDTO) Post {
 	return Post{Name: p.Name, Description: p.Description, AuthorID: authorId}
+}
+
+func (this Post) IsAuthor(userId uuid.UUID) bool {
+    return this.AuthorID == userId
 }

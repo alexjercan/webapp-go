@@ -1,13 +1,15 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"text/template"
 	"webapp-go/webapp"
 	"webapp-go/webapp/config"
 	"webapp-go/webapp/controllers"
+	"webapp-go/webapp/middlewares"
 	"webapp-go/webapp/repositories"
 	"webapp-go/webapp/services"
-	"webapp-go/webapp/middlewares"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -44,6 +46,22 @@ func main() {
 	store := cookie.NewStore([]byte(cfg.AuthStore.Secret))
 	router.Use(sessions.Sessions(cfg.AuthStore.Name, store))
 
+    router.SetFuncMap(template.FuncMap{
+        "dict": func(values ...interface{}) (map[string]interface{}, error) {
+            if len(values)%2 != 0 {
+                return nil, errors.New("invalid dict call")
+            }
+            dict := make(map[string]interface{}, len(values)/2)
+            for i := 0; i < len(values); i+=2 {
+                key, ok := values[i].(string)
+                if !ok {
+                    return nil, errors.New("dict keys must be strings")
+                }
+                dict[key] = values[i+1]
+            }
+            return dict, nil
+        },
+    })
 	router.LoadHTMLGlob("templates/*")
 
     authorized := router.Group("/", middlewares.AuthRequired(bearerService))
