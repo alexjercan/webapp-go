@@ -31,6 +31,8 @@ func (this postsRepository) GetPost(c context.Context, slug uuid.UUID) (post mod
 }
 
 func (this postsRepository) GetPosts(c context.Context) (posts []models.Post, err error) {
+    posts = []models.Post{}
+
 	err = this.db.NewSelect().Model(&posts).Relation("Author").Scan(c)
 
     return
