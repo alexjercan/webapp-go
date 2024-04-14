@@ -10,7 +10,7 @@ import (
 
 type UsersRepository interface {
 	GetUser(c context.Context, id uuid.UUID) (models.User, error)
-    GetUserByLogin(c context.Context, githubUsername string) (models.User, error)
+	GetUserByLogin(c context.Context, githubUsername string) (models.User, error)
 	GetUsers(c context.Context) ([]models.User, error)
 	CreateUser(c context.Context, user models.User) (models.User, error)
 	UpdateUser(c context.Context, id uuid.UUID, user models.User) (models.User, error)
@@ -26,39 +26,39 @@ func NewUserRepository(db *bun.DB) UsersRepository {
 }
 
 func (this usersRepository) GetUser(c context.Context, id uuid.UUID) (user models.User, err error) {
-	err = this.db.NewSelect().Model(&user).Where("id = ?", id).Scan(c);
+	err = this.db.NewSelect().Model(&user).Where("id = ?", id).Scan(c)
 
-    return
+	return
 }
 
 func (this usersRepository) GetUserByLogin(c context.Context, githubUsername string) (user models.User, err error) {
-	err = this.db.NewSelect().Model(&user).Where("github_username = ?", githubUsername).Scan(c);
+	err = this.db.NewSelect().Model(&user).Where("github_username = ?", githubUsername).Scan(c)
 
-    return
+	return
 }
 
 func (this usersRepository) GetUsers(c context.Context) (users []models.User, err error) {
 	err = this.db.NewSelect().Model(&users).Scan(c)
 
-    return
+	return
 }
 
 func (this usersRepository) CreateUser(c context.Context, user models.User) (models.User, error) {
 	_, err := this.db.NewInsert().Model(&user).Exec(c)
 
-    return user, err
+	return user, err
 }
 
 func (this usersRepository) UpdateUser(c context.Context, id uuid.UUID, user models.User) (models.User, error) {
 	user.ID = id
 
-    _, err := this.db.NewUpdate().Model(&user).OmitZero().WherePK().Exec(c)
+	_, err := this.db.NewUpdate().Model(&user).OmitZero().WherePK().Exec(c)
 
-    return user, err
+	return user, err
 }
 
 func (this usersRepository) DeleteUser(c context.Context, id uuid.UUID) (uuid.UUID, error) {
-    _, err := this.db.NewDelete().Model((*models.User)(nil)).Where("id = ?", id).Exec(c)
+	_, err := this.db.NewDelete().Model((*models.User)(nil)).Where("id = ?", id).Exec(c)
 
-    return id, err
+	return id, err
 }

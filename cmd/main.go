@@ -17,27 +17,27 @@ import (
 )
 
 func main() {
-    cfg, err := config.LoadConfig()
-    if err != nil {
-        panic(err)
-    }
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		panic(err)
+	}
 
-    db := webapp.DBConnection(cfg)
+	db := webapp.DBConnection(cfg)
 
-    defer db.Close()
+	defer db.Close()
 
-    postsRepository := repositories.NewPostsRepository(db)
-    usersRepository := repositories.NewUserRepository(db)
-    documentsRepository := repositories.NewDocumentsRepository(db)
+	postsRepository := repositories.NewPostsRepository(db)
+	usersRepository := repositories.NewUserRepository(db)
+	documentsRepository := repositories.NewDocumentsRepository(db)
 
-    authService := services.NewAuthService(cfg)
-    usersService := services.NewUsersService(usersRepository)
-    bearerService := services.NewBearerService(cfg)
+	authService := services.NewAuthService(cfg)
+	usersService := services.NewUsersService(usersRepository)
+	bearerService := services.NewBearerService(cfg)
 
-    postsController := controllers.NewPostsController(postsRepository)
-    viewController := controllers.NewViewController(postsRepository, usersRepository)
-    authController := controllers.NewAuthController(cfg, authService, usersService, bearerService)
-    documentsController := controllers.NewDocumentsController(documentsRepository, postsRepository)
+	postsController := controllers.NewPostsController(postsRepository)
+	viewController := controllers.NewViewController(postsRepository, usersRepository)
+	authController := controllers.NewAuthController(cfg, authService, usersService, bearerService)
+	documentsController := controllers.NewDocumentsController(documentsRepository, postsRepository)
 
 	// Creates a gin router with default middleware:
 	// logger and recovery (crash-free) middleware
@@ -46,25 +46,25 @@ func main() {
 	store := cookie.NewStore([]byte(cfg.AuthStore.Secret))
 	router.Use(sessions.Sessions(cfg.AuthStore.Name, store))
 
-    router.SetFuncMap(template.FuncMap{
-        "dict": func(values ...interface{}) (map[string]interface{}, error) {
-            if len(values)%2 != 0 {
-                return nil, errors.New("invalid dict call")
-            }
-            dict := make(map[string]interface{}, len(values)/2)
-            for i := 0; i < len(values); i+=2 {
-                key, ok := values[i].(string)
-                if !ok {
-                    return nil, errors.New("dict keys must be strings")
-                }
-                dict[key] = values[i+1]
-            }
-            return dict, nil
-        },
-    })
+	router.SetFuncMap(template.FuncMap{
+		"dict": func(values ...interface{}) (map[string]interface{}, error) {
+			if len(values)%2 != 0 {
+				return nil, errors.New("invalid dict call")
+			}
+			dict := make(map[string]interface{}, len(values)/2)
+			for i := 0; i < len(values); i += 2 {
+				key, ok := values[i].(string)
+				if !ok {
+					return nil, errors.New("dict keys must be strings")
+				}
+				dict[key] = values[i+1]
+			}
+			return dict, nil
+		},
+	})
 	router.LoadHTMLGlob("templates/*")
 
-    authorized := router.Group("/", middlewares.AuthRequired(bearerService))
+	authorized := router.Group("/", middlewares.AuthRequired(bearerService))
 
 	authorized.GET("/api/posts/:slug", postsController.GetPost)
 	authorized.GET("/api/posts", postsController.GetPosts)
@@ -72,26 +72,26 @@ func main() {
 	authorized.PUT("/api/posts/:slug", postsController.UpdatePost)
 	authorized.DELETE("/api/posts/:slug", postsController.DeletePost)
 
-    authorized.GET("/api/posts/:slug/documents/:id", documentsController.GetDocument)
-    authorized.GET("/api/posts/:slug/documents", documentsController.GetDocuments)
-    authorized.POST("/api/posts/:slug/documents", documentsController.CreateDocument)
-    authorized.PUT("/api/posts/:slug/documents/:id", documentsController.UpdateDocument)
-    authorized.DELETE("/api/posts/:slug/documents/:id", documentsController.DeleteDocument)
+	authorized.GET("/api/posts/:slug/documents/:id", documentsController.GetDocument)
+	authorized.GET("/api/posts/:slug/documents", documentsController.GetDocuments)
+	authorized.POST("/api/posts/:slug/documents", documentsController.CreateDocument)
+	authorized.PUT("/api/posts/:slug/documents/:id", documentsController.UpdateDocument)
+	authorized.DELETE("/api/posts/:slug/documents/:id", documentsController.DeleteDocument)
 
-    authorized.GET("/api/user", authController.GetUser)
+	authorized.GET("/api/user", authController.GetUser)
 
-    authorized.GET("/api/bearer", authController.BearerToken)
+	authorized.GET("/api/bearer", authController.BearerToken)
 
 	authorized.GET("/", viewController.GetIndexPage)
 	authorized.GET("/user", viewController.GetUserPage)
 	authorized.GET("/posts/:slug", viewController.GetPostPage)
 	authorized.GET("/create", viewController.GetCreatePostPage)
 
-    router.GET("/auth/login", authController.Login)
-    router.GET("/auth/callback", authController.Callback)
+	router.GET("/auth/login", authController.Login)
+	router.GET("/auth/callback", authController.Callback)
 
 	// By default it serves on :8080 unless a
 	// PORT environment variable was defined.
-    router.Run(fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port))
+	router.Run(fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port))
 	// router.Run(":3000") for a hard coded port
 }

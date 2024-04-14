@@ -19,15 +19,15 @@ type Config struct {
 	OAuth struct {
 		ClientId     string `yaml:"clientId"`
 		ClientSecret string `yaml:"clientSecret"`
-        RedirectUri  string `yaml:"redirectUri"`
+		RedirectUri  string `yaml:"redirectUri"`
 	} `yaml:"oauth"`
 	AuthStore struct {
-        Name string `yaml:"name"`
+		Name   string `yaml:"name"`
 		Secret string `yaml:"secret"`
 	} `yaml:"authStore"`
-    JWT struct {
-        Secret string `yaml:"secret"`
-    } `yaml:"jwt"`
+	JWT struct {
+		Secret string `yaml:"secret"`
+	} `yaml:"jwt"`
 }
 
 func LoadConfig() (cfg Config, err error) {

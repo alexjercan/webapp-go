@@ -16,14 +16,14 @@ import (
 )
 
 func main() {
-    cfg, err := config.LoadConfig()
-    if err != nil {
-        panic(err)
-    }
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		panic(err)
+	}
 
 	app := &cli.App{
-		Name: "migrations",
-        Usage: "run migrations stuff",
+		Name:  "migrations",
+		Usage: "run migrations stuff",
 		Commands: []*cli.Command{
 			{
 				Name:  "init",

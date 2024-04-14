@@ -25,35 +25,35 @@ func NewPostsRepository(db *bun.DB) PostsRepository {
 }
 
 func (this postsRepository) GetPost(c context.Context, slug uuid.UUID) (post models.Post, err error) {
-	err = this.db.NewSelect().Model(&post).Relation("Author").Relation("Documents").Where("slug = ?", slug).Scan(c);
+	err = this.db.NewSelect().Model(&post).Relation("Author").Relation("Documents").Where("slug = ?", slug).Scan(c)
 
-    return
+	return
 }
 
 func (this postsRepository) GetPosts(c context.Context) (posts []models.Post, err error) {
-    posts = []models.Post{}
+	posts = []models.Post{}
 
 	err = this.db.NewSelect().Model(&posts).Relation("Author").Scan(c)
 
-    return
+	return
 }
 
 func (this postsRepository) CreatePost(c context.Context, post models.Post) (models.Post, error) {
 	_, err := this.db.NewInsert().Model(&post).Exec(c)
 
-    return post, err
+	return post, err
 }
 
 func (this postsRepository) UpdatePost(c context.Context, slug uuid.UUID, post models.Post) (models.Post, error) {
 	post.Slug = slug
 
-    _, err := this.db.NewUpdate().Model(&post).OmitZero().WherePK().Exec(c)
+	_, err := this.db.NewUpdate().Model(&post).OmitZero().WherePK().Exec(c)
 
-    return post, err
+	return post, err
 }
 
 func (this postsRepository) DeletePost(c context.Context, slug uuid.UUID) (uuid.UUID, error) {
-    _, err := this.db.NewDelete().Model((*models.Post)(nil)).Where("slug = ?", slug).Exec(c)
+	_, err := this.db.NewDelete().Model((*models.Post)(nil)).Where("slug = ?", slug).Exec(c)
 
-    return slug, err
+	return slug, err
 }

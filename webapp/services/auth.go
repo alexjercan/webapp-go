@@ -15,10 +15,10 @@ import (
 )
 
 type AuthService interface {
-    AuthCodeURL(state string) string
-    AccessToken(code string) (models.TokenResponse, error)
-    UserInfo(accessToken string) (models.GitHubUser, error)
-    GenerateRandomState() (string, error)
+	AuthCodeURL(state string) string
+	AccessToken(code string) (models.TokenResponse, error)
+	UserInfo(accessToken string) (models.GitHubUser, error)
+	GenerateRandomState() (string, error)
 }
 
 type githubAuthService struct {
@@ -42,78 +42,78 @@ func (this githubAuthService) GenerateRandomState() (state string, err error) {
 }
 
 func (this githubAuthService) AuthCodeURL(state string) string {
-    values := url.Values{}
-    values.Add("client_id", this.cfg.OAuth.ClientId)
-    values.Add("scope", "user")
-    values.Add("redirect_uri", this.cfg.OAuth.RedirectUri)
-    values.Add("state", state)
-    query := values.Encode()
+	values := url.Values{}
+	values.Add("client_id", this.cfg.OAuth.ClientId)
+	values.Add("scope", "user")
+	values.Add("redirect_uri", this.cfg.OAuth.RedirectUri)
+	values.Add("state", state)
+	query := values.Encode()
 
-    return fmt.Sprintf("https://github.com/login/oauth/authorize?%s", query)
+	return fmt.Sprintf("https://github.com/login/oauth/authorize?%s", query)
 }
 
 func (this githubAuthService) accessTokenURL(code string) string {
-    values := url.Values{}
-    values.Add("client_id", this.cfg.OAuth.ClientId)
-    values.Add("client_secret", this.cfg.OAuth.ClientSecret)
-    values.Add("code", code)
-    query := values.Encode()
+	values := url.Values{}
+	values.Add("client_id", this.cfg.OAuth.ClientId)
+	values.Add("client_secret", this.cfg.OAuth.ClientSecret)
+	values.Add("code", code)
+	query := values.Encode()
 
-    return fmt.Sprintf("https://github.com/login/oauth/access_token?%s", query)
+	return fmt.Sprintf("https://github.com/login/oauth/access_token?%s", query)
 }
 
 func (this githubAuthService) AccessToken(code string) (token models.TokenResponse, err error) {
-    url := this.accessTokenURL(code)
+	url := this.accessTokenURL(code)
 
-    client := &http.Client{}
-    req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte{}))
-    if err != nil {
-        return
-    }
-    req.Header.Add("Accept", "application/json")
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte{}))
+	if err != nil {
+		return
+	}
+	req.Header.Add("Accept", "application/json")
 
-    res, err := client.Do(req)
-    if err != nil {
-        return
-    }
+	res, err := client.Do(req)
+	if err != nil {
+		return
+	}
 
-    defer res.Body.Close()
+	defer res.Body.Close()
 
-    body, err := io.ReadAll(res.Body)
-    if err != nil {
-        return
-    }
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return
+	}
 
-    err = json.Unmarshal(body, &token)
+	err = json.Unmarshal(body, &token)
 
-    return
+	return
 }
 
 func (this githubAuthService) UserInfo(accessToken string) (user models.GitHubUser, err error) {
-    url := "https://api.github.com/user"
+	url := "https://api.github.com/user"
 
-    client := &http.Client{}
-    req, err := http.NewRequest("GET", url, bytes.NewBuffer([]byte{}))
-    if err != nil {
-        return
-    }
-    req.Header.Add("Accept", "application/json")
-    req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, bytes.NewBuffer([]byte{}))
+	if err != nil {
+		return
+	}
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 
-    res, err := client.Do(req)
-    if err != nil {
-        return
-    }
+	res, err := client.Do(req)
+	if err != nil {
+		return
+	}
 
-    defer res.Body.Close()
+	defer res.Body.Close()
 
-    body, err := io.ReadAll(res.Body)
-    if err != nil {
-        return
-    }
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return
+	}
 
-    user = models.GitHubUser{}
-    err = json.Unmarshal(body, &user)
+	user = models.GitHubUser{}
+	err = json.Unmarshal(body, &user)
 
-    return
+	return
 }

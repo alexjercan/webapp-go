@@ -26,7 +26,7 @@ func NewBearerService(cfg config.Config) BearerService {
 func (this bearerService) GenerateToken(id uuid.UUID) (t string, err error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
-    claims["id"] = id.String()
+	claims["id"] = id.String()
 	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
 
 	t, err = token.SignedString([]byte(this.cfg.JWT.Secret))
@@ -43,7 +43,7 @@ func (this bearerService) ValidateToken(token string) (id uuid.UUID, err error) 
 	}
 
 	claims := t.Claims.(jwt.MapClaims)
-    id, err = uuid.Parse(claims["id"].(string))
+	id, err = uuid.Parse(claims["id"].(string))
 
 	return
 }

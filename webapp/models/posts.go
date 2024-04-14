@@ -21,8 +21,8 @@ type Post struct {
 	CreatedAt   time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp" json:"createdAt"`
 	AuthorID    uuid.UUID `bun:"author_id,type:uuid,notnull" json:"authorId"`
 
-    Author      *User     `bun:"rel:belongs-to,join:author_id=id" json:"author"`
-    Documents []*Document `bun:"rel:has-many,join:slug=post_slug"`
+	Author    *User       `bun:"rel:belongs-to,join:author_id=id" json:"author"`
+	Documents []*Document `bun:"rel:has-many,join:slug=post_slug"`
 }
 
 func NewPost(authorId uuid.UUID, p PostDTO) Post {
@@ -30,5 +30,5 @@ func NewPost(authorId uuid.UUID, p PostDTO) Post {
 }
 
 func (this Post) IsAuthor(userId uuid.UUID) bool {
-    return this.AuthorID == userId
+	return this.AuthorID == userId
 }

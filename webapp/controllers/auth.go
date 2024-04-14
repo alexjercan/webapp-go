@@ -16,14 +16,14 @@ type AuthController interface {
 	Login(c *gin.Context)
 	Callback(c *gin.Context)
 	BearerToken(c *gin.Context)
-    GetUser(c *gin.Context)
+	GetUser(c *gin.Context)
 }
 
 type authController struct {
-	cfg          config.Config
-	authService  services.AuthService
-	usersService services.UsersService
-    bearerService services.BearerService
+	cfg           config.Config
+	authService   services.AuthService
+	usersService  services.UsersService
+	bearerService services.BearerService
 }
 
 func NewAuthController(cfg config.Config, authService services.AuthService, usersService services.UsersService, bearerService services.BearerService) AuthController {
@@ -72,13 +72,13 @@ func (this authController) Callback(c *gin.Context) {
 		return
 	}
 
-    user, err := this.usersService.CreateOrUpdateUser(c, dto)
-    if err != nil {
-        c.AbortWithError(http.StatusInternalServerError, err)
-        return
-    }
+	user, err := this.usersService.CreateOrUpdateUser(c, dto)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
 
-    session.Set(middlewares.USER_ID_KEY, user.ID.String())
+	session.Set(middlewares.USER_ID_KEY, user.ID.String())
 	if err := session.Save(); err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -102,7 +102,7 @@ func (this authController) BearerToken(c *gin.Context) {
 		return
 	}
 
-    t, err := this.bearerService.GenerateToken(user.ID)
+	t, err := this.bearerService.GenerateToken(user.ID)
 
 	c.JSON(http.StatusOK, gin.H{
 		"token": t,
@@ -110,17 +110,17 @@ func (this authController) BearerToken(c *gin.Context) {
 }
 
 func (this authController) GetUser(c *gin.Context) {
-    userId, exists := c.Get(middlewares.USER_ID_KEY)
-    if !exists {
-        c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-        return
-    }
+	userId, exists := c.Get(middlewares.USER_ID_KEY)
+	if !exists {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
 
-    user, err := this.usersService.GetUser(c, userId.(uuid.UUID))
-    if err != nil {
-        c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
-        return
-    }
+	user, err := this.usersService.GetUser(c, userId.(uuid.UUID))
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
 
-    c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, user)
 }
