@@ -5,39 +5,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Posts</title>
-    <script src="https://unpkg.com/htmx.org@1.9.11"
-        integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0"
-        crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+    {{template "dependencies"}}
 </head>
 
 <body>
-    <a href="/user">Profile</a>
-    <ul> {{range .Posts}}<li>{{template "post-preview" .}}</li>{{else}}<div><strong>No Posts</strong></div>{{end}} </ul>
-    <div> {{template "post-create"}} </div>
-
-    <script>
-        document.addEventListener("htmx:afterRequest", function (event) {
-            console.log(event)
-            if (event.detail.target.id === "post-create-form") {
-                window.location.href = "/"
-            }
-        })
-    </script>
+    {{template "navbar" .}}
+    <ul role="list" class="divide-y divide-gray-100">
+        {{range .Posts}}
+        <li class="flex justify-between gap-x-6 py-5">
+            {{template "post-preview" .}}
+        </li>
+        {{else}}<div><strong>No Posts</strong></div>
+        {{end}}
+    </ul>
 </body>
 
 </html>
 
 {{define "post-preview"}}
-<a href="/posts/{{.Slug}}">{{.Name}}</a>
-{{end}}
-
-{{define "post-create"}}
-<form id="post-create-form" name="post-form" hx-post="/api/posts" hx-trigger="submit" hx-ext="json-enc">
-    <label for="post-name">Name:</label><br>
-    <input type="text" id="post-name" name="name"><br>
-    <label for="post-description">Description:</label><br>
-    <input type="text" id="post-description" name="description">
-    <button type="submit">Submit</button>
-</form>
+<div class="flex min-w-0 gap-x-4">
+    <img class="h-12 w-12 flex-none rounded-full bg-gray-50"
+        src="https://www.shutterstock.com/image-vector/internet-education-concept-elearning-resources-600nw-1485832811.jpg"
+        alt="">
+    <div class="min-w-0 flex-auto">
+        <a class="post-link" href="/posts/{{.Slug}}">
+            <span class="sr-only"></span>
+            <p class="text-sm font-semibold leading-6 text-gray-900">{{.Name}}</p>
+        </a>
+        <p class="mt-1 truncate text-xs leading-5 text-gray-500">{{.Description}}</p>
+    </div>
+</div>
+<div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end">
+    <p class="text-sm leading-6 text-gray-900">Created by {{.Author.Name}}</p>
+    <p class="mt-1 text-xs leading-5 text-gray-500">Created at <time datetime="{{.CreatedAt}}">{{.CreatedAt}}</time>
+    </p>
+</div>
 {{end}}

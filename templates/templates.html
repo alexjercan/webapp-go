@@ -1,0 +1,44 @@
+{{define "dependencies"}}
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/htmx.org@1.9.11"
+    integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0"
+    crossorigin="anonymous"></script>
+<script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+{{end}}
+
+{{define "navbar"}}
+<nav class="bg-gray-100">
+    <div class="mx-auto px-6 py-3">
+        <div class="flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold text-gray-800">Home</a>
+            <div class="flex items-center">
+                <div class="relative ml-3">
+                    <div class="flex items-center">
+                        <div class="flex items-center">
+                            <a href="/create"
+                                class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                                <div class="flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    <span class="ml-2">New Post</span>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="ml-4">
+                            <a href="/user" type="button"
+                                class="relative flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                                id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                                <img class="h-8 w-8 rounded-full" src="{{.User.AvatarUrl}}" alt="">
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+{{end}}

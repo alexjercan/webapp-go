@@ -95,7 +95,18 @@ func (this postsController) UpdatePost(c *gin.Context) {
         return
     }
 
-    post, err := this.repo.UpdatePost(c, slug, models.NewPost(userId.(uuid.UUID), dto))
+    post, err := this.repo.GetPost(c, slug)
+    if err != nil {
+        c.Status(http.StatusNotFound)
+        return
+    }
+
+    if post.AuthorID != userId.(uuid.UUID) {
+        c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+        return
+    }
+
+    post, err = this.repo.UpdatePost(c, slug, models.NewPost(userId.(uuid.UUID), dto))
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -134,5 +145,5 @@ func (this postsController) DeletePost(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusOK)
+	c.Status(http.StatusNoContent)
 }

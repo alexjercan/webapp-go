@@ -7,6 +7,7 @@ type TokenResponse struct {
 }
 
 type GitHubUser struct {
-	Login string `json:"login"`
-	Name  string `json:"name"`
+	Login     string `json:"login"`
+	Name      string `json:"name"`
+	AvatarUrl string `json:"avatar_url"`
 }

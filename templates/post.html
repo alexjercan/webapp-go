@@ -5,25 +5,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Post</title>
-    <script src="https://unpkg.com/htmx.org@1.9.11"
-        integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0"
-        crossorigin="anonymous"></script>
+    {{template "dependencies"}}
 </head>
 
 <body>
-    <a href="/">Home</a>
+    {{template "navbar" .}}
     {{template "post-view" .Post}}
-    <button id="delete-post-button" hx-delete="/api/posts/{{.Post.Slug}}" hx-confirm="Are you sure?">Delete</button>
-
-    <form id="file-upload-form" hx-encoding="multipart/form-data" hx-post="/api/posts/{{.Post.Slug}}/documents">
-        <input type="file" name="file" multiple>
-        <button>Upload</button>
-    </form>
 
     <script>
         document.addEventListener("htmx:afterRequest", function (event) {
             if (event.detail.target.id === "delete-post-button") {
                 window.location.href = "/"
+            }
+
+            if (event.detail.target.id === "file-upload-form") {
+                window.location.reload()
+            }
+
+            if (event.detail.target.id === "delete-document-button") {
+                window.location.reload()
             }
         })
     </script>
@@ -32,15 +32,73 @@
 </html>
 
 {{define "post-view"}}
-<h1>{{.Name}}</h1>
-<div>{{.Description}}</div>
-<div>Author: {{.Author.Name}}</div>
+<div class="bg-gray min-h-screen flex flex-col justify-start items-center">
+    <div class="container mx-auto p-4 divide-y divide-gray-100">
+        <div class="py-4">
+            <h1 class="text-2xl font-bold text-gray-800">{{.Name}}</h1>
+        </div>
+        <div class="py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <p class="text-sm text-gray-500">{{.Description}}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Author: {{.Author.Name}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container mx-auto p-4 divide-y divide-gray-100">
+        <div class="py-4">
+            <h1 class="text-2xl font-bold text-gray-800">Documents</h1>
+        </div>
 
-<h2>Documents</h2>
-{{range .Documents}}<li>{{template "document-view" .}}</li>{{else}}<div><strong>No Documents</strong></div>{{end}}
+        {{range .Documents}}
+        <div class="py-4">
+            {{template "document-view" .}}
+        </div>
+        {{else}}
+        <div class="py-4">
+            <strong>No Documents</strong>
+        </div>
+        {{end}}
+    </div>
+    <div class="container mx-auto p-4 divide-y divide-gray-100">
+        <div class="py-4">
+            <h1 class="text-2xl font-bold text-gray-800">Settings</h1>
+        </div>
+        <div class="py-4">
+            <form id="file-upload-form" hx-encoding="multipart/form-data" hx-post="/api/posts/{{.Slug}}/documents">
+
+                <label class="block text-sm font-medium leading-6 text-gray-900" for="post-file-input">Upload
+                    file</label>
+                <input class="mt-2"
+                    id="post-file-input" type="file" name="file" multiple>
+                <button id="form-upload-button"
+                    class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Upload</button>
+            </form>
+        </div>
+        <div class="py-4">
+            <button id="delete-post-button"
+                class="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Delete</button>
+        </div>
+    </div>
+</div>
 {{end}}
 
 {{define "document-view"}}
-<h3>{{.Filename}}</h3>
-<pre>{{.ParseContent}}</pre>
+<div class="flex justify-between items-center">
+    <div>
+        <h3 class="text-sm font-semibold leading-6 text-gray-900">{{.Filename}}</h3>
+        <pre class="mt-1 text-xs leading-5 text-gray-500">{{.ParseContent}}</pre>
+    </div>
+    <div>
+        <button
+            class="rounded-md bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Update</button>
+
+        <button id="delete-document-button"
+            class="rounded-md bg-red-500 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+            hx-delete="/api/posts/{{.PostSlug}}/documents/{{.ID}}">Delete</button>
+    </div>
+</div>
 {{end}}

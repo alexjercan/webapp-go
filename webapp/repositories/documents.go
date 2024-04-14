@@ -12,6 +12,8 @@ type DocumentsRepository interface {
     GetDocument(c context.Context, slug uuid.UUID, id uuid.UUID) (models.Document, error)
     GetDocuments(c context.Context, slug uuid.UUID) ([]models.Document, error)
 	CreateDocument(c context.Context, document models.Document) (models.Document, error)
+    UpdateDocument(c context.Context, slug uuid.UUID, id uuid.UUID, document models.Document) (models.Document, error)
+    DeleteDocument(c context.Context, slug uuid.UUID, id uuid.UUID) (uuid.UUID, error)
 }
 
 type documentsRepository struct {
@@ -38,4 +40,19 @@ func (this documentsRepository) CreateDocument(c context.Context, document model
 	_, err := this.db.NewInsert().Model(&document).Exec(c)
 
     return document, err
+}
+
+func (this documentsRepository) UpdateDocument(c context.Context, slug uuid.UUID, id uuid.UUID, document models.Document) (models.Document, error) {
+    document.PostSlug = slug
+    document.ID = id
+
+    _, err := this.db.NewUpdate().Model(&document).OmitZero().WherePK().Exec(c)
+
+    return document, err
+}
+
+func (this documentsRepository) DeleteDocument(c context.Context, slug uuid.UUID, id uuid.UUID) (uuid.UUID, error) {
+    _, err := this.db.NewDelete().Model(&models.Document{}).Where("post_slug = ?", slug).Where("id = ?", id).Exec(c)
+
+    return id, err
 }

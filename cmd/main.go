@@ -35,7 +35,7 @@ func main() {
     postsController := controllers.NewPostsController(postsRepository)
     viewController := controllers.NewViewController(postsRepository, usersRepository)
     authController := controllers.NewAuthController(cfg, authService, usersService, bearerService)
-    documentsController := controllers.NewDocumentsController(documentsRepository)
+    documentsController := controllers.NewDocumentsController(documentsRepository, postsRepository)
 
 	// Creates a gin router with default middleware:
 	// logger and recovery (crash-free) middleware
@@ -57,6 +57,8 @@ func main() {
     authorized.GET("/api/posts/:slug/documents/:id", documentsController.GetDocument)
     authorized.GET("/api/posts/:slug/documents", documentsController.GetDocuments)
     authorized.POST("/api/posts/:slug/documents", documentsController.CreateDocument)
+    authorized.PUT("/api/posts/:slug/documents/:id", documentsController.UpdateDocument)
+    authorized.DELETE("/api/posts/:slug/documents/:id", documentsController.DeleteDocument)
 
     authorized.GET("/api/user", authController.GetUser)
 
@@ -65,6 +67,7 @@ func main() {
 	authorized.GET("/", viewController.GetIndexPage)
 	authorized.GET("/user", viewController.GetUserPage)
 	authorized.GET("/posts/:slug", viewController.GetPostPage)
+	authorized.GET("/create", viewController.GetCreatePostPage)
 
     router.GET("/auth/login", authController.Login)
     router.GET("/auth/callback", authController.Callback)
