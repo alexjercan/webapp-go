@@ -3,7 +3,6 @@ package controllers
 import (
 	"net/http"
 	"strconv"
-	"webapp-go/webapp/models"
 	"webapp-go/webapp/repositories"
 	"webapp-go/webapp/services"
 
@@ -12,7 +11,7 @@ import (
 )
 
 type EmbeddingsController interface {
-	GetSimilarDocument(c *gin.Context)
+	GetSimilarDocuments(c *gin.Context)
 }
 
 type embeddingsController struct {
@@ -24,7 +23,7 @@ func NewEmbeddingsController(documentsRepo repositories.DocumentsRepository, emb
 	return embeddingsController{documentsRepo, embeddingsService}
 }
 
-func (this embeddingsController) GetSimilarDocument(c *gin.Context) {
+func (this embeddingsController) GetSimilarDocuments(c *gin.Context) {
 	slug, err := uuid.Parse(c.Param("slug"))
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
@@ -55,15 +54,10 @@ func (this embeddingsController) GetSimilarDocument(c *gin.Context) {
 		return
 	}
 
-	documents := []models.Document{}
+	documentIds := []uuid.UUID{}
 	for _, e := range embeddings {
-		document, err := this.documentsRepo.GetDocument(c, slug, e.DocumentID)
-		if err != nil {
-			continue
-		}
-
-		documents = append(documents, document)
+		documentIds = append(documentIds, e.Document.ID)
 	}
 
-	c.JSON(http.StatusOK, documents)
+	c.JSON(http.StatusOK, documentIds)
 }

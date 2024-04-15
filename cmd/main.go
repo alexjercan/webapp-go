@@ -95,7 +95,7 @@ func main() {
 	authorized.PUT("/api/posts/:slug/documents/:id", documentsController.UpdateDocument)
 	authorized.DELETE("/api/posts/:slug/documents/:id", documentsController.DeleteDocument)
 
-	authorized.GET("/api/embeddings/:slug", embeddingsController.GetSimilarDocument)
+	authorized.GET("/api/search/:slug", embeddingsController.GetSimilarDocuments)
 
 	authorized.GET("/api/user", authController.GetUser)
 
