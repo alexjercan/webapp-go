@@ -1,6 +1,7 @@
 package models
 
 import (
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -30,5 +31,13 @@ func NewDocument(d DocumentDTO) Document {
 }
 
 func (this Document) ParseContent() string {
-	return string(this.Content)
+	switch this.ContentType {
+	case "text/plain":
+		fallthrough
+	case "text/markdown":
+		return string(this.Content)
+	default:
+		log.Printf("Content type not supported: %s\n", this.ContentType)
+		return ""
+	}
 }

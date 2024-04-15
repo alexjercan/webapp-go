@@ -23,10 +23,11 @@ type DocumentsController interface {
 type documentsController struct {
 	documentsRepo repositories.DocumentsRepository
 	postsRepo     repositories.PostsRepository
+	documentChan  chan<- models.DocumentChanItem
 }
 
-func NewDocumentsController(documentsRepo repositories.DocumentsRepository, postsRepo repositories.PostsRepository) DocumentsController {
-	return documentsController{documentsRepo, postsRepo}
+func NewDocumentsController(documentsRepo repositories.DocumentsRepository, postsRepo repositories.PostsRepository, documentChan chan<- models.DocumentChanItem) DocumentsController {
+	return documentsController{documentsRepo, postsRepo, documentChan}
 }
 
 func (this documentsController) GetDocument(c *gin.Context) {
@@ -125,6 +126,8 @@ func (this documentsController) CreateDocument(c *gin.Context) {
 			continue
 		}
 
+		this.documentChan <- models.NewDocumentChanItem(models.CREATE, document.PostSlug, document.ID)
+
 		documents = append(documents, document)
 	}
 
@@ -173,6 +176,8 @@ func (this documentsController) UpdateDocument(c *gin.Context) {
 		return
 	}
 
+	this.documentChan <- models.NewDocumentChanItem(models.UPDATE, document.PostSlug, document.ID)
+
 	c.JSON(http.StatusOK, document)
 }
 
@@ -211,6 +216,8 @@ func (this documentsController) DeleteDocument(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
+
+	this.documentChan <- models.NewDocumentChanItem(models.DELETE, slug, id)
 
 	c.Status(http.StatusNoContent)
 }

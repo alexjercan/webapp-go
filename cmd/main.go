@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"text/template"
@@ -8,15 +9,19 @@ import (
 	"webapp-go/webapp/config"
 	"webapp-go/webapp/controllers"
 	"webapp-go/webapp/middlewares"
+	"webapp-go/webapp/models"
 	"webapp-go/webapp/repositories"
 	"webapp-go/webapp/services"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"github.com/tmc/langchaingo/llms/ollama"
 )
 
 func main() {
+	ctx := context.Background()
+
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		panic(err)
@@ -26,18 +31,30 @@ func main() {
 
 	defer db.Close()
 
+	llm, err := ollama.New(ollama.WithModel("llama2"))
+	if err != nil {
+		panic(err)
+	}
+
+	documentChan := make(chan models.DocumentChanItem, 128)
+
 	postsRepository := repositories.NewPostsRepository(db)
 	usersRepository := repositories.NewUserRepository(db)
 	documentsRepository := repositories.NewDocumentsRepository(db)
+    embeddingRepository := repositories.NewEmbeddingsRepository(db)
 
 	authService := services.NewAuthService(cfg)
 	usersService := services.NewUsersService(usersRepository)
 	bearerService := services.NewBearerService(cfg)
+	embeddingsService := services.NewEmbeddingsService(documentsRepository, embeddingRepository, llm, documentChan)
 
 	postsController := controllers.NewPostsController(postsRepository)
 	viewController := controllers.NewViewController(postsRepository, usersRepository)
 	authController := controllers.NewAuthController(cfg, authService, usersService, bearerService)
-	documentsController := controllers.NewDocumentsController(documentsRepository, postsRepository)
+	documentsController := controllers.NewDocumentsController(documentsRepository, postsRepository, documentChan)
+    embeddingsController := controllers.NewEmbeddingsController(documentsRepository, embeddingsService)
+
+	go embeddingsService.Worker(ctx)
 
 	// Creates a gin router with default middleware:
 	// logger and recovery (crash-free) middleware
@@ -77,6 +94,8 @@ func main() {
 	authorized.POST("/api/posts/:slug/documents", documentsController.CreateDocument)
 	authorized.PUT("/api/posts/:slug/documents/:id", documentsController.UpdateDocument)
 	authorized.DELETE("/api/posts/:slug/documents/:id", documentsController.DeleteDocument)
+
+    authorized.GET("/api/embeddings/:slug", embeddingsController.GetSimilarDocument)
 
 	authorized.GET("/api/user", authController.GetUser)
 

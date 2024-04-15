@@ -35,6 +35,14 @@ func init() {
 			panic(err)
 		}
 
+		_, err = db.NewCreateTable().
+			Model((*models.DocumentEmbedding)(nil)).
+			ForeignKey(`("document_id") REFERENCES "documents" ("id") ON DELETE CASCADE`).
+			Exec(ctx)
+		if err != nil {
+			panic(err)
+		}
+
 		return nil
 	}, func(ctx context.Context, db *bun.DB) error {
 		fmt.Print(" [down migration] ")
@@ -57,6 +65,14 @@ func init() {
 
 		_, err = db.NewDropTable().
 			Model((*models.Document)(nil)).
+			IfExists().
+			Exec(ctx)
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = db.NewDropTable().
+			Model((*models.DocumentEmbedding)(nil)).
 			IfExists().
 			Exec(ctx)
 		if err != nil {
