@@ -4,40 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard</title>
+    <title>Posts Manager</title>
     {{template "dependencies"}}
 </head>
 
-<body>
-    {{template "navbar" .}}
-    <ul role="list" class="divide-y divide-gray-100">
-        {{range .Posts}}
-        <li class="flex justify-between gap-x-6 py-5">
-            {{template "post-preview" .}}
-        </li>
-        {{else}}<div><strong>No Posts</strong></div>
-        {{end}}
-    </ul>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="max-w-md mx-auto bg-white p-8 rounded shadow-md">
+        <h1 class="text-3xl font-bold mb-4 text-center">Welcome to our WebApp</h1>
+        <p class="text-gray-700 text-lg mb-6 text-center">This is a web application for retrieval augmented generation.
+        </p>
+        <div class="text-center">
+            <a href="/home"
+                class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition duration-300">Get
+                Started</a>
+        </div>
+    </div>
 </body>
 
 </html>
-
-{{define "post-preview"}}
-<div class="flex min-w-0 gap-x-4">
-    <img class="h-12 w-12 flex-none rounded-full bg-gray-50"
-        src="https://www.shutterstock.com/image-vector/internet-education-concept-elearning-resources-600nw-1485832811.jpg"
-        alt="">
-    <div class="min-w-0 flex-auto">
-        <a class="post-link" href="/posts/{{.Slug}}">
-            <span class="sr-only"></span>
-            <p class="text-sm font-semibold leading-6 text-gray-900">{{.Name}}</p>
-        </a>
-        <p class="mt-1 truncate text-xs leading-5 text-gray-500">{{.Description}}</p>
-    </div>
-</div>
-<div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end">
-    <p class="text-sm leading-6 text-gray-900">Created by {{.Author.Name}}</p>
-    <p class="mt-1 text-xs leading-5 text-gray-500">Created at <time datetime="{{.CreatedAt}}">{{.CreatedAt}}</time>
-    </p>
-</div>
-{{end}}

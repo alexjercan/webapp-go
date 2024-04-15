@@ -14,14 +14,13 @@
 
     <script>
         document.addEventListener("htmx:afterRequest", function (event) {
-            console.log(event)
             if (event.detail.target.id === "post-create-form") {
-                window.location.href = "/"
+                window.location.href = "/home"
             }
         })
 
         document.getElementById("post-cancel-button").addEventListener("click", function () {
-            window.location.href = "/"
+            window.location.href = "/home"
         })
     </script>
 </body>

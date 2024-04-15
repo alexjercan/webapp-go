@@ -12,6 +12,7 @@ import (
 
 type ViewController interface {
 	GetIndexPage(c *gin.Context)
+    GetHomePage(c *gin.Context)
 	GetUserPage(c *gin.Context)
 	GetPostPage(c *gin.Context)
 	GetCreatePostPage(c *gin.Context)
@@ -27,6 +28,10 @@ func NewViewController(postsRepo repositories.PostsRepository, usersRepo reposit
 }
 
 func (this viewController) GetIndexPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "index.html", gin.H{ })
+}
+
+func (this viewController) GetHomePage(c *gin.Context) {
 	userId, exists := c.Get(middlewares.USER_ID_KEY)
 	if !exists {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
@@ -45,7 +50,7 @@ func (this viewController) GetIndexPage(c *gin.Context) {
 		return
 	}
 
-	c.HTML(http.StatusOK, "index.html", gin.H{
+	c.HTML(http.StatusOK, "home.html", gin.H{
 		"Posts": posts, "User": user,
 	})
 }

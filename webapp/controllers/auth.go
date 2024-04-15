@@ -15,6 +15,7 @@ import (
 type AuthController interface {
 	Login(c *gin.Context)
 	Callback(c *gin.Context)
+    Logout(c *gin.Context)
 	BearerToken(c *gin.Context)
 	GetUser(c *gin.Context)
 }
@@ -84,7 +85,18 @@ func (this authController) Callback(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusTemporaryRedirect, "/")
+	c.Redirect(http.StatusTemporaryRedirect, "/home")
+}
+
+func (this authController) Logout(c *gin.Context) {
+    session := sessions.Default(c)
+    session.Clear()
+    if err := session.Save(); err != nil {
+        c.AbortWithError(http.StatusInternalServerError, err)
+        return
+    }
+
+    c.Status(http.StatusNoContent)
 }
 
 func (this authController) BearerToken(c *gin.Context) {

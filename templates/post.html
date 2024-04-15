@@ -15,7 +15,7 @@
     <script>
         document.addEventListener("htmx:afterRequest", function (event) {
             if (event.detail.target.id === "delete-post-button") {
-                window.location.href = "/"
+                window.location.href = "/home"
             }
 
             if (event.detail.target.id === "file-upload-form") {

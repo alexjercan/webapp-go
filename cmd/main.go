@@ -98,16 +98,17 @@ func main() {
 	authorized.GET("/api/search/:slug", embeddingsController.GetSimilarDocuments)
 
 	authorized.GET("/api/user", authController.GetUser)
-
 	authorized.GET("/api/bearer", authController.BearerToken)
 
-	authorized.GET("/", viewController.GetIndexPage)
+	router.GET("/", viewController.GetIndexPage)
+	authorized.GET("/home", viewController.GetHomePage)
 	authorized.GET("/user", viewController.GetUserPage)
 	authorized.GET("/posts/:slug", viewController.GetPostPage)
 	authorized.GET("/create", viewController.GetCreatePostPage)
 
 	router.GET("/auth/login", authController.Login)
 	router.GET("/auth/callback", authController.Callback)
+    authorized.GET("/auth/logout", authController.Logout)
 
 	// By default it serves on :8080 unless a
 	// PORT environment variable was defined.
