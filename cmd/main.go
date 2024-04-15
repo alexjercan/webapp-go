@@ -41,7 +41,7 @@ func main() {
 	postsRepository := repositories.NewPostsRepository(db)
 	usersRepository := repositories.NewUserRepository(db)
 	documentsRepository := repositories.NewDocumentsRepository(db)
-    embeddingRepository := repositories.NewEmbeddingsRepository(db)
+	embeddingRepository := repositories.NewEmbeddingsRepository(db)
 
 	authService := services.NewAuthService(cfg)
 	usersService := services.NewUsersService(usersRepository)
@@ -52,7 +52,7 @@ func main() {
 	viewController := controllers.NewViewController(postsRepository, usersRepository)
 	authController := controllers.NewAuthController(cfg, authService, usersService, bearerService)
 	documentsController := controllers.NewDocumentsController(documentsRepository, postsRepository, documentChan)
-    embeddingsController := controllers.NewEmbeddingsController(documentsRepository, embeddingsService)
+	embeddingsController := controllers.NewEmbeddingsController(documentsRepository, embeddingsService)
 
 	go embeddingsService.Worker(ctx)
 
@@ -95,7 +95,7 @@ func main() {
 	authorized.PUT("/api/posts/:slug/documents/:id", documentsController.UpdateDocument)
 	authorized.DELETE("/api/posts/:slug/documents/:id", documentsController.DeleteDocument)
 
-    authorized.GET("/api/embeddings/:slug", embeddingsController.GetSimilarDocument)
+	authorized.GET("/api/embeddings/:slug", embeddingsController.GetSimilarDocument)
 
 	authorized.GET("/api/user", authController.GetUser)
 

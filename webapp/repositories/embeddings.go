@@ -9,12 +9,12 @@ import (
 )
 
 type EmbeddingsRepository interface {
-    GetEmbedding(c context.Context, id uuid.UUID) (models.DocumentEmbedding, error)
-    GetEmbeddingFor(c context.Context, documentID uuid.UUID) (models.DocumentEmbedding, error)
-    GetSimilarEmbeddings(c context.Context, slug uuid.UUID, embedding []float32, limit int) ([]models.DocumentEmbedding, error)
+	GetEmbedding(c context.Context, id uuid.UUID) (models.DocumentEmbedding, error)
+	GetEmbeddingFor(c context.Context, documentID uuid.UUID) (models.DocumentEmbedding, error)
+	GetSimilarEmbeddings(c context.Context, slug uuid.UUID, embedding []float32, limit int) ([]models.DocumentEmbedding, error)
 	CreateEmbedding(c context.Context, embedding models.DocumentEmbedding) (models.DocumentEmbedding, error)
-    UpdateEmbedding(c context.Context, id uuid.UUID, embedding models.DocumentEmbedding) (models.DocumentEmbedding, error)
-    DeleteEmbedding(c context.Context, id uuid.UUID) (uuid.UUID, error)
+	UpdateEmbedding(c context.Context, id uuid.UUID, embedding models.DocumentEmbedding) (models.DocumentEmbedding, error)
+	DeleteEmbedding(c context.Context, id uuid.UUID) (uuid.UUID, error)
 }
 
 type embeddingsRepository struct {
@@ -26,23 +26,23 @@ func NewEmbeddingsRepository(db *bun.DB) EmbeddingsRepository {
 }
 
 func (this embeddingsRepository) GetEmbedding(c context.Context, id uuid.UUID) (embedding models.DocumentEmbedding, err error) {
-    err = this.db.NewSelect().Model(&embedding).Where("id = ?", id).Scan(c)
+	err = this.db.NewSelect().Model(&embedding).Where("id = ?", id).Scan(c)
 
-    return
+	return
 }
 
 func (this embeddingsRepository) GetEmbeddingFor(c context.Context, documentID uuid.UUID) (embedding models.DocumentEmbedding, err error) {
-    err = this.db.NewSelect().Model(&embedding).Where("document_id = ?", documentID).Scan(c)
+	err = this.db.NewSelect().Model(&embedding).Where("document_id = ?", documentID).Scan(c)
 
-    return
+	return
 }
 
 func (this embeddingsRepository) GetSimilarEmbeddings(c context.Context, slug uuid.UUID, embedding []float32, limit int) ([]models.DocumentEmbedding, error) {
-    embeddings := []models.DocumentEmbedding{}
+	embeddings := []models.DocumentEmbedding{}
 
-    err := this.db.NewSelect().Model(&embeddings).Relation("Document").Where("post_slug = ?", slug).OrderExpr("embeddings <-> ?", embedding).Limit(limit).Scan(c)
+	err := this.db.NewSelect().Model(&embeddings).Relation("Document").Where("post_slug = ?", slug).OrderExpr("embeddings <-> ?", embedding).Limit(limit).Scan(c)
 
-    return embeddings, err
+	return embeddings, err
 }
 
 func (this embeddingsRepository) CreateEmbedding(c context.Context, embedding models.DocumentEmbedding) (models.DocumentEmbedding, error) {
@@ -52,15 +52,15 @@ func (this embeddingsRepository) CreateEmbedding(c context.Context, embedding mo
 }
 
 func (this embeddingsRepository) UpdateEmbedding(c context.Context, id uuid.UUID, embedding models.DocumentEmbedding) (models.DocumentEmbedding, error) {
-    embedding.ID = id
+	embedding.ID = id
 
-    _, err := this.db.NewUpdate().Model(&embedding).OmitZero().WherePK().Exec(c)
+	_, err := this.db.NewUpdate().Model(&embedding).OmitZero().WherePK().Exec(c)
 
-    return embedding, err
+	return embedding, err
 }
 
 func (this embeddingsRepository) DeleteEmbedding(c context.Context, id uuid.UUID) (uuid.UUID, error) {
-    _, err := this.db.NewDelete().Model(&models.DocumentEmbedding{}).Where("id = ?", id).Exec(c)
+	_, err := this.db.NewDelete().Model(&models.DocumentEmbedding{}).Where("id = ?", id).Exec(c)
 
-    return id, err
+	return id, err
 }

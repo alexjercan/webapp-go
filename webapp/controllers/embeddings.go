@@ -12,12 +12,12 @@ import (
 )
 
 type EmbeddingsController interface {
-    GetSimilarDocument(c *gin.Context)
+	GetSimilarDocument(c *gin.Context)
 }
 
 type embeddingsController struct {
-	documentsRepo repositories.DocumentsRepository
-    embeddingsService services.EmbeddingsService
+	documentsRepo     repositories.DocumentsRepository
+	embeddingsService services.EmbeddingsService
 }
 
 func NewEmbeddingsController(documentsRepo repositories.DocumentsRepository, embeddingsService services.EmbeddingsService) EmbeddingsController {
@@ -32,38 +32,38 @@ func (this embeddingsController) GetSimilarDocument(c *gin.Context) {
 	}
 
 	query, ok := c.GetQuery("query")
-    if !ok {
-        c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "query parameter is required"})
-        return
-    }
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "query parameter is required"})
+		return
+	}
 
-    limit := 10
-    limitStr, ok := c.GetQuery("limit")
-    if ok {
-        l, err := strconv.Atoi(limitStr)
-        if err != nil {
-            c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "limit parameter must be an integer"})
-            return
-        }
+	limit := 10
+	limitStr, ok := c.GetQuery("limit")
+	if ok {
+		l, err := strconv.Atoi(limitStr)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "limit parameter must be an integer"})
+			return
+		}
 
-        limit = l
-    }
+		limit = l
+	}
 
-    embeddings, err := this.embeddingsService.GetSimilarities(c, slug, query, limit)
-    if err != nil {
-        c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+	embeddings, err := this.embeddingsService.GetSimilarities(c, slug, query, limit)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-    documents := []models.Document{}
-    for _, e := range embeddings {
-        document, err := this.documentsRepo.GetDocument(c, slug, e.DocumentID)
-        if err != nil {
-            continue
-        }
+	documents := []models.Document{}
+	for _, e := range embeddings {
+		document, err := this.documentsRepo.GetDocument(c, slug, e.DocumentID)
+		if err != nil {
+			continue
+		}
 
-        documents = append(documents, document)
-    }
+		documents = append(documents, document)
+	}
 
 	c.JSON(http.StatusOK, documents)
 }
