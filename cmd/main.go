@@ -108,7 +108,7 @@ func main() {
 
 	router.GET("/auth/login", authController.Login)
 	router.GET("/auth/callback", authController.Callback)
-    authorized.GET("/auth/logout", authController.Logout)
+	authorized.GET("/auth/logout", authController.Logout)
 
 	// By default it serves on :8080 unless a
 	// PORT environment variable was defined.

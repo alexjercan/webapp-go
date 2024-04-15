@@ -34,8 +34,8 @@ func (this Document) ParseContent() string {
 	switch this.ContentType {
 	case "text/plain":
 		fallthrough
-    case "text/x-rst":
-        fallthrough
+	case "text/x-rst":
+		fallthrough
 	case "text/markdown":
 		return string(this.Content)
 	default:
