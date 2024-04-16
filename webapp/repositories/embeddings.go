@@ -11,7 +11,7 @@ import (
 type EmbeddingsRepository interface {
 	GetEmbedding(c context.Context, id uuid.UUID) (models.DocumentEmbedding, error)
 	GetEmbeddingFor(c context.Context, documentID uuid.UUID) (models.DocumentEmbedding, error)
-	GetSimilarEmbeddings(c context.Context, slug uuid.UUID, embedding []float32, limit int) ([]models.DocumentEmbedding, error)
+	GetSimilarEmbeddings(c context.Context, slug uuid.UUID, embedding []float32, limit int) ([]models.DocumentScore, error)
 	CreateEmbedding(c context.Context, embedding models.DocumentEmbedding) (models.DocumentEmbedding, error)
 	UpdateEmbedding(c context.Context, id uuid.UUID, embedding models.DocumentEmbedding) (models.DocumentEmbedding, error)
 	DeleteEmbedding(c context.Context, id uuid.UUID) (uuid.UUID, error)
@@ -37,12 +37,21 @@ func (this embeddingsRepository) GetEmbeddingFor(c context.Context, documentID u
 	return
 }
 
-func (this embeddingsRepository) GetSimilarEmbeddings(c context.Context, slug uuid.UUID, embedding []float32, limit int) ([]models.DocumentEmbedding, error) {
-	embeddings := []models.DocumentEmbedding{}
+func (this embeddingsRepository) GetSimilarEmbeddings(c context.Context, slug uuid.UUID, embedding []float32, limit int) ([]models.DocumentScore, error) {
+	scores := []models.DocumentScore{}
 
-	err := this.db.NewSelect().Model(&embeddings).Relation("Document").Where("post_slug = ?", slug).OrderExpr("embeddings <-> ?", embedding).Limit(limit).Scan(c)
+	err := this.db.NewSelect().
+        Table("document_embeddings").
+        Column("document_embeddings.document_id").
+        ColumnExpr("1 - (embeddings <=> ?) AS score", embedding).
+        Join("JOIN documents as d").
+        JoinOn("document_embeddings.document_id = d.id").
+        Where("post_slug = ?", slug).
+        Order("score").
+        Limit(limit).
+        Scan(c, &scores)
 
-	return embeddings, err
+	return scores, err
 }
 
 func (this embeddingsRepository) CreateEmbedding(c context.Context, embedding models.DocumentEmbedding) (models.DocumentEmbedding, error) {

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{{.Post.Name}}</title>
+    <title>{{.Post.Name}}</title>
     {{template "dependencies"}}
 </head>
 
@@ -50,6 +50,29 @@
     </div>
     <div class="container mx-auto p-4 divide-y divide-gray-100">
         <div class="py-4">
+            <h1 class="text-2xl font-bold text-gray-800">Search</h1>
+        </div>
+        <div class="py-4">
+            <form id="post-search-form" name="post-form" hx-get="/search/{{.Post.Slug}}" hx-trigger="submit"
+                hx-target="#post-search-result" hx-swap="innerHTML">
+                <div class="py-4 flex items-center space-x-4">
+                    <div class="flex-grow">
+                        <textarea id="post-search-text" name="query" rows="3"
+                            class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"></textarea>
+                    </div>
+                    <div class="h-full">
+                        <button id="form-upload-button" type="submit"
+                            class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                            Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <div id="post-search-result"></div>
+        </div>
+    </div>
+    <div class="container mx-auto p-4 divide-y divide-gray-100">
+        <div class="py-4">
             <h1 class="text-2xl font-bold text-gray-800">Documents</h1>
         </div>
 
@@ -70,11 +93,9 @@
         </div>
         <div class="py-4">
             <form id="file-upload-form" hx-encoding="multipart/form-data" hx-post="/api/posts/{{.Post.Slug}}/documents">
-
                 <label class="block text-sm font-medium leading-6 text-gray-900" for="post-file-input">Upload
                     file</label>
-                <input class="mt-2"
-                    id="post-file-input" type="file" name="file" multiple>
+                <input class="mt-2" id="post-file-input" type="file" name="file" multiple>
                 <button id="form-upload-button"
                     class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Upload</button>
             </form>
@@ -107,4 +128,20 @@
         {{end}}
     </div>
 </div>
+{{end}}
+
+{{define "search"}}
+<h1 class="text-xl text-gray-500">Relevant Documents</h1>
+<ul>
+    {{range .Documents}}
+    <li>
+        <h3 class="text-sm font-semibold leading-6 text-gray-900">{{.Filename}}</h3>
+    </li>
+    {{else}}
+    <div class="py-4">
+        <strong>No Documents</strong>
+    </div>
+    {{end}}
+    <div>{{.Response}}</div>
+</ul>
 {{end}}

@@ -39,3 +39,8 @@ type DocumentEmbedding struct {
 func NewDocumentEmbedding(id uuid.UUID, embeddings []float32) DocumentEmbedding {
 	return DocumentEmbedding{DocumentID: id, Embeddings: embeddings}
 }
+
+type DocumentScore struct {
+	DocumentID uuid.UUID `bun:"document_id,type:uuid,notnull,unique" json:"documentId"`
+    Score float32 `bun:"score" json:"score"`
+}

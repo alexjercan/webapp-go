@@ -49,7 +49,7 @@ func main() {
 	embeddingsService := services.NewEmbeddingsService(documentsRepository, embeddingRepository, llm, documentChan)
 
 	postsController := controllers.NewPostsController(postsRepository)
-	viewController := controllers.NewViewController(postsRepository, usersRepository)
+	viewController := controllers.NewViewController(postsRepository, usersRepository, documentsRepository, embeddingsService)
 	authController := controllers.NewAuthController(cfg, authService, usersService, bearerService)
 	documentsController := controllers.NewDocumentsController(documentsRepository, postsRepository, documentChan)
 	embeddingsController := controllers.NewEmbeddingsController(documentsRepository, embeddingsService)
@@ -95,7 +95,7 @@ func main() {
 	authorized.PUT("/api/posts/:slug/documents/:id", documentsController.UpdateDocument)
 	authorized.DELETE("/api/posts/:slug/documents/:id", documentsController.DeleteDocument)
 
-	authorized.GET("/api/search/:slug", embeddingsController.GetSimilarDocuments)
+	authorized.GET("/api/search/:slug", embeddingsController.GetSearchResult)
 
 	authorized.GET("/api/user", authController.GetUser)
 	authorized.GET("/api/bearer", authController.BearerToken)
@@ -105,6 +105,7 @@ func main() {
 	authorized.GET("/user", viewController.GetUserPage)
 	authorized.GET("/posts/:slug", viewController.GetPostPage)
 	authorized.GET("/create", viewController.GetCreatePostPage)
+    authorized.GET("/search/:slug", viewController.SearchPost)
 
 	router.GET("/auth/login", authController.Login)
 	router.GET("/auth/callback", authController.Callback)

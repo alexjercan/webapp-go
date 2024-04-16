@@ -4,7 +4,9 @@ import (
 	"net/http"
 
 	"webapp-go/webapp/middlewares"
+	"webapp-go/webapp/models"
 	"webapp-go/webapp/repositories"
+	"webapp-go/webapp/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -16,15 +18,18 @@ type ViewController interface {
 	GetUserPage(c *gin.Context)
 	GetPostPage(c *gin.Context)
 	GetCreatePostPage(c *gin.Context)
+	SearchPost(c *gin.Context)
 }
 
 type viewController struct {
-	postsRepo repositories.PostsRepository
-	usersRepo repositories.UsersRepository
+	postsRepo         repositories.PostsRepository
+	usersRepo         repositories.UsersRepository
+	documentsRepo     repositories.DocumentsRepository
+	embeddingsService services.EmbeddingsService
 }
 
-func NewViewController(postsRepo repositories.PostsRepository, usersRepo repositories.UsersRepository) ViewController {
-	return viewController{postsRepo, usersRepo}
+func NewViewController(postsRepo repositories.PostsRepository, usersRepo repositories.UsersRepository, documentsRepo repositories.DocumentsRepository, embeddingsService services.EmbeddingsService) ViewController {
+	return viewController{postsRepo, usersRepo, documentsRepo, embeddingsService}
 }
 
 func (this viewController) GetIndexPage(c *gin.Context) {
@@ -115,4 +120,29 @@ func (this viewController) GetCreatePostPage(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "create.html", gin.H{"User": user})
+}
+
+func (this viewController) SearchPost(c *gin.Context) {
+	slug, err := uuid.Parse(c.Param("slug"))
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	query := models.SearchQuery{Limit: 3}
+	if err := c.Bind(&query); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+    searchResult, err := this.embeddingsService.GetSearchResult(c, slug, query)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	filter := models.DocumentsFilter{IDs: searchResult.DocumentIDs}
+	documents, err := this.documentsRepo.GetDocuments(c, slug, filter)
+
+    c.HTML(http.StatusOK, "search", gin.H{"Documents": documents, "Response": searchResult.Response})
 }

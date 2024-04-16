@@ -2,7 +2,9 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"strings"
 	"webapp-go/webapp/models"
 	"webapp-go/webapp/repositories"
 
@@ -11,7 +13,7 @@ import (
 )
 
 type EmbeddingsService interface {
-	GetSimilarities(c context.Context, slug uuid.UUID, query string, limit int) ([]models.DocumentEmbedding, error)
+    GetSearchResult(c context.Context, slug uuid.UUID, query models.SearchQuery) (models.SearchResult, error)
 	Worker(c context.Context)
 }
 
@@ -93,15 +95,47 @@ func (this embeddingsService) Worker(c context.Context) {
 	}
 }
 
-func (this embeddingsService) GetSimilarities(c context.Context, slug uuid.UUID, query string, limit int) (embeddings []models.DocumentEmbedding, err error) {
-	embeddings = []models.DocumentEmbedding{}
+func (this embeddingsService) buildPrompt(question string, documents []models.Document) string {
+    prompt := "Based on the following context answer the given question as best as you can\n"
 
-	es, err := this.llm.CreateEmbedding(c, []string{query})
+    contents := []string{}
+    for _, d := range documents {
+        contents = append(contents, d.ParseContent())
+    }
+    context := strings.Join(contents, "\n")
+
+    return fmt.Sprintf("%s\n%s\n%s", prompt, context, question)
+}
+
+func (this embeddingsService) GetSearchResult(c context.Context, slug uuid.UUID, query models.SearchQuery) (result models.SearchResult, err error) {
+	es, err := this.llm.CreateEmbedding(c, []string{query.Query})
 	if err != nil {
 		return
 	}
 
-	embeddings, err = this.embeddingsRepo.GetSimilarEmbeddings(c, slug, es[0], limit)
+    scores, err := this.embeddingsRepo.GetSimilarEmbeddings(c, slug, es[0], query.Limit)
+	if err != nil {
+		return
+	}
+
+	documentIds := []uuid.UUID{}
+	for _, s := range scores {
+		documentIds = append(documentIds, s.DocumentID)
+	}
+
+    result.DocumentIDs = documentIds
+
+	filter := models.DocumentsFilter{IDs: documentIds}
+	documents, err := this.documentsRepo.GetDocuments(c, slug, filter)
+
+    prompt := this.buildPrompt(query.Query, documents)
+
+    response, err := this.llm.Call(c, prompt)
+    if (err != nil) {
+        return
+    }
+
+    result.Response = response
 
 	return
 }

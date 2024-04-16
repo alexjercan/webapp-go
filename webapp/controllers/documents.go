@@ -53,13 +53,19 @@ func (this documentsController) GetDocument(c *gin.Context) {
 }
 
 func (this documentsController) GetDocuments(c *gin.Context) {
+	var filter models.DocumentsFilter
+	if err := c.Bind(&filter); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
 	slug, err := uuid.Parse(c.Param("slug"))
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	documents, err := this.documentsRepo.GetDocuments(c, slug)
+	documents, err := this.documentsRepo.GetDocuments(c, slug, filter)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
