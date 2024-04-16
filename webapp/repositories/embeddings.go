@@ -13,8 +13,8 @@ type EmbeddingsRepository interface {
 	GetEmbeddingFor(c context.Context, documentID uuid.UUID) (models.DocumentEmbedding, error)
 	GetSimilarEmbeddings(c context.Context, slug uuid.UUID, embedding []float32, limit int) ([]models.DocumentScore, error)
 	CreateEmbedding(c context.Context, embedding models.DocumentEmbedding) (models.DocumentEmbedding, error)
-	UpdateEmbedding(c context.Context, id uuid.UUID, embedding models.DocumentEmbedding) (models.DocumentEmbedding, error)
-	DeleteEmbedding(c context.Context, id uuid.UUID) (uuid.UUID, error)
+	UpdateEmbeddingFor(c context.Context, documentID uuid.UUID, embedding models.DocumentEmbedding) (models.DocumentEmbedding, error)
+	DeleteEmbeddingFor(c context.Context, documentID uuid.UUID) (uuid.UUID, error)
 }
 
 type embeddingsRepository struct {
@@ -60,16 +60,14 @@ func (this embeddingsRepository) CreateEmbedding(c context.Context, embedding mo
 	return embedding, err
 }
 
-func (this embeddingsRepository) UpdateEmbedding(c context.Context, id uuid.UUID, embedding models.DocumentEmbedding) (models.DocumentEmbedding, error) {
-	embedding.ID = id
-
-	_, err := this.db.NewUpdate().Model(&embedding).OmitZero().WherePK().Exec(c)
+func (this embeddingsRepository) UpdateEmbeddingFor(c context.Context, documentID uuid.UUID, embedding models.DocumentEmbedding) (models.DocumentEmbedding, error) {
+	_, err := this.db.NewUpdate().Model(&embedding).OmitZero().Where("document_id = ?", documentID).Exec(c)
 
 	return embedding, err
 }
 
-func (this embeddingsRepository) DeleteEmbedding(c context.Context, id uuid.UUID) (uuid.UUID, error) {
-	_, err := this.db.NewDelete().Model(&models.DocumentEmbedding{}).Where("id = ?", id).Exec(c)
+func (this embeddingsRepository) DeleteEmbeddingFor(c context.Context, id uuid.UUID) (uuid.UUID, error) {
+	_, err := this.db.NewDelete().Model(&models.DocumentEmbedding{}).Where("document_id = ?", id).Exec(c)
 
 	return id, err
 }

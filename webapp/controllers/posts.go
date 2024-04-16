@@ -27,14 +27,18 @@ func NewPostsController(repo repositories.PostsRepository) PostsController {
 	return postsController{repo}
 }
 
-func (this postsController) GetPost(c *gin.Context) {
-	slug, err := uuid.Parse(c.Param("slug"))
-	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
+type PostGetQuery struct {
+    Slug string `uri:"slug" binding:"required,uuid"`
+}
 
-	post, err := this.repo.GetPost(c, slug)
+func (this postsController) GetPost(c *gin.Context) {
+    query := PostGetQuery{}
+    if err := c.ShouldBindUri(&query); err != nil {
+        c.AbortWithError(http.StatusBadRequest, err)
+        return
+    }
+
+	post, err := this.repo.GetPost(c, uuid.MustParse(query.Slug))
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return
@@ -55,19 +59,15 @@ func (this postsController) GetPosts(c *gin.Context) {
 }
 
 func (this postsController) CreatePost(c *gin.Context) {
-	var dto models.PostDTO
-	if err := c.Bind(&dto); err != nil {
+	userId := c.MustGet(middlewares.USER_ID_KEY).(uuid.UUID)
+
+    dto := models.PostDTO{}
+	if err := c.ShouldBind(&dto); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	userId, exists := c.Get(middlewares.USER_ID_KEY)
-	if !exists {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
-
-	post, err := this.repo.CreatePost(c, models.NewPost(userId.(uuid.UUID), dto))
+	post, err := this.repo.CreatePost(c, models.NewPost(userId, dto))
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
@@ -76,37 +76,37 @@ func (this postsController) CreatePost(c *gin.Context) {
 	c.JSON(http.StatusCreated, post)
 }
 
+type PostUpdateQuery struct {
+    Slug string `uri:"slug" binding:"required,uuid"`
+}
+
 func (this postsController) UpdatePost(c *gin.Context) {
-	slug, err := uuid.Parse(c.Param("slug"))
-	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
+	userId := c.MustGet(middlewares.USER_ID_KEY).(uuid.UUID)
 
-	var dto models.PostDTO
-	if err := c.Bind(&dto); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
+    query := PostUpdateQuery{}
+    if err := c.ShouldBindUri(&query); err != nil {
+        c.AbortWithError(http.StatusBadRequest, err)
+        return
+    }
 
-	userId, exists := c.Get(middlewares.USER_ID_KEY)
-	if !exists {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
-
-	post, err := this.repo.GetPost(c, slug)
+	post, err := this.repo.GetPost(c, uuid.MustParse(query.Slug))
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return
 	}
 
-	if post.AuthorID != userId.(uuid.UUID) {
+	if post.AuthorID != userId {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	post, err = this.repo.UpdatePost(c, slug, models.NewPost(userId.(uuid.UUID), dto))
+    dto := models.PostDTO{}
+	if err := c.ShouldBind(&dto); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	post, err = this.repo.UpdatePost(c, post.Slug, models.NewPost(userId, dto))
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -115,31 +115,31 @@ func (this postsController) UpdatePost(c *gin.Context) {
 	c.JSON(http.StatusOK, post)
 }
 
+type PostDeleteQuery struct {
+    Slug string `uri:"slug" binding:"required,uuid"`
+}
+
 func (this postsController) DeletePost(c *gin.Context) {
-	slug, err := uuid.Parse(c.Param("slug"))
-	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
+	userId := c.MustGet(middlewares.USER_ID_KEY).(uuid.UUID)
 
-	userId, exists := c.Get(middlewares.USER_ID_KEY)
-	if !exists {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+    query := PostDeleteQuery{}
+    if err := c.ShouldBindUri(&query); err != nil {
+        c.AbortWithError(http.StatusBadRequest, err)
+        return
+    }
 
-	post, err := this.repo.GetPost(c, slug)
+	post, err := this.repo.GetPost(c, uuid.MustParse(query.Slug))
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return
 	}
 
-	if post.AuthorID != userId.(uuid.UUID) {
+	if post.AuthorID != userId {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	_, err = this.repo.DeletePost(c, slug)
+	_, err = this.repo.DeletePost(c, post.Slug)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return

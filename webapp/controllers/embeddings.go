@@ -23,22 +23,26 @@ func NewEmbeddingsController(documentsRepo repositories.DocumentsRepository, emb
 	return embeddingsController{documentsRepo, embeddingsService}
 }
 
+type SearchGetParams struct {
+    Slug string `uri:"slug" binding:"required,uuid"`
+}
+
 func (this embeddingsController) GetSearchResult(c *gin.Context) {
-	slug, err := uuid.Parse(c.Param("slug"))
-	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
+    params := SearchGetParams{}
+    if err := c.ShouldBindUri(&params); err != nil {
+        c.AbortWithError(http.StatusBadRequest, err)
+        return
+    }
 
 	query := models.SearchQuery{Limit: 3}
-	if err := c.Bind(&query); err != nil {
+	if err := c.ShouldBind(&query); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	searchResult, err := this.embeddingsService.GetSearchResult(c, slug, query)
+	searchResult, err := this.embeddingsService.GetSearchResult(c, uuid.MustParse(params.Slug), query)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 

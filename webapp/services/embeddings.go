@@ -50,10 +50,10 @@ func (this embeddingsService) createEmbeddings(c context.Context, slug uuid.UUID
 	}
 }
 
-func (this embeddingsService) updateEmbeddings(c context.Context, slug uuid.UUID, id uuid.UUID) {
-	document, err := this.documentsRepo.GetDocument(c, slug, id)
+func (this embeddingsService) updateEmbeddings(c context.Context, slug uuid.UUID, documentID uuid.UUID) {
+	document, err := this.documentsRepo.GetDocument(c, slug, documentID)
 	if err != nil {
-		log.Printf("Error getting the document with id %s: %s\n", id, err.Error())
+		log.Printf("Error getting the document with id %s: %s\n", documentID, err.Error())
 		return
 	}
 
@@ -61,21 +61,21 @@ func (this embeddingsService) updateEmbeddings(c context.Context, slug uuid.UUID
 
 	embeddings, err := this.llm.CreateEmbedding(c, []string{content})
 	if err != nil {
-		log.Printf("Error generating embeddings for document with id %s: %s\n", id, err.Error())
+		log.Printf("Error generating embeddings for document with id %s: %s\n", documentID, err.Error())
 		return
 	}
 
-	_, err = this.embeddingsRepo.UpdateEmbedding(c, id, models.NewDocumentEmbedding(id, embeddings[0]))
+	_, err = this.embeddingsRepo.UpdateEmbeddingFor(c, documentID, models.NewDocumentEmbedding(documentID, embeddings[0]))
 	if err != nil {
-		log.Printf("Error saving the embeddings for document with id %s: %s\n", id, err.Error())
+		log.Printf("Error saving the embeddings for document with id %s: %s\n", documentID, err.Error())
 		return
 	}
 }
 
-func (this embeddingsService) deleteEmbeddings(c context.Context, id uuid.UUID) {
-	_, err := this.embeddingsRepo.DeleteEmbedding(c, id)
+func (this embeddingsService) deleteEmbeddings(c context.Context, documentID uuid.UUID) {
+	_, err := this.embeddingsRepo.DeleteEmbeddingFor(c, documentID)
 	if err != nil {
-		log.Printf("Error deleting the embeddings for document with id %s: %s\n", id, err.Error())
+		log.Printf("Error deleting the embeddings for document with id %s: %s\n", documentID, err.Error())
 		return
 	}
 }
@@ -104,7 +104,7 @@ func (this embeddingsService) buildPrompt(question string, documents []models.Do
     }
     context := strings.Join(contents, "\n")
 
-    return fmt.Sprintf("%s\n%s\n%s", prompt, context, question)
+    return fmt.Sprintf("%s\n%s\nQuestion: %s\nAnswer: ", prompt, context, question)
 }
 
 func (this embeddingsService) GetSearchResult(c context.Context, slug uuid.UUID, query models.SearchQuery) (result models.SearchResult, err error) {

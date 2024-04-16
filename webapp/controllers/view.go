@@ -37,13 +37,9 @@ func (this viewController) GetIndexPage(c *gin.Context) {
 }
 
 func (this viewController) GetHomePage(c *gin.Context) {
-	userId, exists := c.Get(middlewares.USER_ID_KEY)
-	if !exists {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+	userId := c.MustGet(middlewares.USER_ID_KEY).(uuid.UUID)
 
-	user, err := this.usersRepo.GetUser(c, userId.(uuid.UUID))
+	user, err := this.usersRepo.GetUser(c, userId)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
@@ -61,13 +57,9 @@ func (this viewController) GetHomePage(c *gin.Context) {
 }
 
 func (this viewController) GetUserPage(c *gin.Context) {
-	userId, exists := c.Get(middlewares.USER_ID_KEY)
-	if !exists {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+	userId := c.MustGet(middlewares.USER_ID_KEY).(uuid.UUID)
 
-	user, err := this.usersRepo.GetUser(c, userId.(uuid.UUID))
+	user, err := this.usersRepo.GetUser(c, userId)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
@@ -76,26 +68,26 @@ func (this viewController) GetUserPage(c *gin.Context) {
 	c.HTML(http.StatusOK, "user.html", gin.H{"User": user})
 }
 
-func (this viewController) GetPostPage(c *gin.Context) {
-	userId, exists := c.Get(middlewares.USER_ID_KEY)
-	if !exists {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+type PostPageGetParams struct {
+    Slug string `uri:"slug" binding:"required,uuid"`
+}
 
-	user, err := this.usersRepo.GetUser(c, userId.(uuid.UUID))
+func (this viewController) GetPostPage(c *gin.Context) {
+	userId := c.MustGet(middlewares.USER_ID_KEY).(uuid.UUID)
+
+	user, err := this.usersRepo.GetUser(c, userId)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
 
-	slug, err := uuid.Parse(c.Param("slug"))
-	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
+    params := PostPageGetParams{}
+    if err := c.ShouldBindUri(&params); err != nil {
+        c.AbortWithError(http.StatusBadRequest, err)
+        return
+    }
 
-	post, err := this.postsRepo.GetPost(c, slug)
+	post, err := this.postsRepo.GetPost(c, uuid.MustParse(params.Slug))
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return
@@ -107,13 +99,9 @@ func (this viewController) GetPostPage(c *gin.Context) {
 }
 
 func (this viewController) GetCreatePostPage(c *gin.Context) {
-	userId, exists := c.Get(middlewares.USER_ID_KEY)
-	if !exists {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+	userId := c.MustGet(middlewares.USER_ID_KEY).(uuid.UUID)
 
-	user, err := this.usersRepo.GetUser(c, userId.(uuid.UUID))
+	user, err := this.usersRepo.GetUser(c, userId)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
@@ -122,27 +110,31 @@ func (this viewController) GetCreatePostPage(c *gin.Context) {
 	c.HTML(http.StatusOK, "create.html", gin.H{"User": user})
 }
 
+type SearchPageParams struct {
+    Slug string `uri:"slug" binding:"required,uuid"`
+}
+
 func (this viewController) SearchPost(c *gin.Context) {
-	slug, err := uuid.Parse(c.Param("slug"))
-	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
+    params := SearchPageParams{}
+    if err := c.ShouldBindUri(&params); err != nil {
+        c.AbortWithError(http.StatusBadRequest, err)
+        return
+    }
 
 	query := models.SearchQuery{Limit: 3}
-	if err := c.Bind(&query); err != nil {
+	if err := c.ShouldBind(&query); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-    searchResult, err := this.embeddingsService.GetSearchResult(c, slug, query)
+    searchResult, err := this.embeddingsService.GetSearchResult(c, uuid.MustParse(params.Slug), query)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	filter := models.DocumentsFilter{IDs: searchResult.DocumentIDs}
-	documents, err := this.documentsRepo.GetDocuments(c, slug, filter)
+	documents, err := this.documentsRepo.GetDocuments(c, uuid.MustParse(params.Slug), filter)
 
     c.HTML(http.StatusOK, "search", gin.H{"Documents": documents, "Response": searchResult.Response})
 }

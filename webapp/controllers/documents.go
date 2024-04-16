@@ -30,20 +30,19 @@ func NewDocumentsController(documentsRepo repositories.DocumentsRepository, post
 	return documentsController{documentsRepo, postsRepo, documentChan}
 }
 
+type DocumentGetQuery struct {
+    Slug uuid.UUID `form:"slug" binding:"required"`
+    ID uuid.UUID `form:"id" binding:"required"`
+}
+
 func (this documentsController) GetDocument(c *gin.Context) {
-	slug, err := uuid.Parse(c.Param("slug"))
-	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
+    query := DocumentGetQuery{}
+    if err := c.ShouldBind(&query); err != nil {
+        c.AbortWithError(http.StatusBadRequest, err)
+        return
+    }
 
-	id, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
-
-	document, err := this.documentsRepo.GetDocument(c, slug, id)
+	document, err := this.documentsRepo.GetDocument(c, query.Slug, query.ID)
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return
@@ -52,20 +51,24 @@ func (this documentsController) GetDocument(c *gin.Context) {
 	c.JSON(http.StatusOK, document)
 }
 
+type DocumentsGetQuery struct {
+    Slug string `uri:"slug" binding:"required,uuid"`
+}
+
 func (this documentsController) GetDocuments(c *gin.Context) {
-	var filter models.DocumentsFilter
-	if err := c.Bind(&filter); err != nil {
+    query := DocumentsGetQuery{}
+    if err := c.ShouldBindUri(&query); err != nil {
+        c.AbortWithError(http.StatusBadRequest, err)
+        return
+    }
+
+    filter := models.DocumentsFilter{}
+	if err := c.ShouldBind(&filter); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	slug, err := uuid.Parse(c.Param("slug"))
-	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
-
-	documents, err := this.documentsRepo.GetDocuments(c, slug, filter)
+	documents, err := this.documentsRepo.GetDocuments(c, uuid.MustParse(query.Slug), filter)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -74,26 +77,26 @@ func (this documentsController) GetDocuments(c *gin.Context) {
 	c.JSON(http.StatusOK, documents)
 }
 
+type DocumentCreateQuery struct {
+    Slug string `uri:"slug" binding:"required,uuid"`
+}
+
 func (this documentsController) CreateDocument(c *gin.Context) {
-	slug, err := uuid.Parse(c.Param("slug"))
-	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
+	userId := c.MustGet(middlewares.USER_ID_KEY).(uuid.UUID)
 
-	userId, exists := c.Get(middlewares.USER_ID_KEY)
-	if !exists {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
+    query := DocumentCreateQuery{}
+    if err := c.ShouldBindUri(&query); err != nil {
+        c.AbortWithError(http.StatusBadRequest, err)
+        return
+    }
 
-	post, err := this.postsRepo.GetPost(c, slug)
+	post, err := this.postsRepo.GetPost(c, uuid.MustParse(query.Slug))
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return
 	}
 
-	if post.AuthorID != userId.(uuid.UUID) {
+	if post.AuthorID != userId {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
@@ -122,7 +125,7 @@ func (this documentsController) CreateDocument(c *gin.Context) {
 				Filename:    file.Filename,
 				ContentType: file.Header.Get("Content-Type"),
 				Content:     content,
-				PostSlug:    slug,
+				PostSlug:    post.Slug,
 			},
 		)
 
@@ -140,43 +143,38 @@ func (this documentsController) CreateDocument(c *gin.Context) {
 	c.JSON(http.StatusOK, documents)
 }
 
+type DocumentUpdateQuery struct {
+    Slug string `uri:"slug" binding:"required,uuid"`
+    ID string `uri:"id" binding:"required,uuid"`
+}
+
 func (this documentsController) UpdateDocument(c *gin.Context) {
-	slug, err := uuid.Parse(c.Param("slug"))
-	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
+	userId := c.MustGet(middlewares.USER_ID_KEY).(uuid.UUID)
 
-	id, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
+    query := DocumentUpdateQuery{}
+    if err := c.ShouldBindUri(&query); err != nil {
+        c.AbortWithError(http.StatusBadRequest, err)
+        return
+    }
 
-	userId, exists := c.Get(middlewares.USER_ID_KEY)
-	if !exists {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
-
-	post, err := this.postsRepo.GetPost(c, slug)
+	post, err := this.postsRepo.GetPost(c, uuid.MustParse(query.Slug))
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return
 	}
 
-	if post.AuthorID != userId.(uuid.UUID) {
+	if post.AuthorID != userId {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
 	var dto models.DocumentDTO
-	if err := c.Bind(&dto); err != nil {
+	if err := c.ShouldBind(&dto); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	document, err := this.documentsRepo.UpdateDocument(c, slug, id, models.NewDocument(dto))
+	document, err := this.documentsRepo.UpdateDocument(c, post.Slug, uuid.MustParse(query.ID), models.NewDocument(dto))
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -187,43 +185,38 @@ func (this documentsController) UpdateDocument(c *gin.Context) {
 	c.JSON(http.StatusOK, document)
 }
 
+type DocumentDeleteQuery struct {
+    Slug string `uri:"slug" binding:"required,uuid"`
+    ID string `uri:"id" binding:"required,uuid"`
+}
+
 func (this documentsController) DeleteDocument(c *gin.Context) {
-	slug, err := uuid.Parse(c.Param("slug"))
-	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
+	userId := c.MustGet(middlewares.USER_ID_KEY).(uuid.UUID)
 
-	id, err := uuid.Parse(c.Param("id"))
-	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
+    query := DocumentDeleteQuery{}
+    if err := c.ShouldBindUri(&query); err != nil {
+        c.AbortWithError(http.StatusBadRequest, err)
+        return
+    }
 
-	userId, exists := c.Get(middlewares.USER_ID_KEY)
-	if !exists {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
-
-	post, err := this.postsRepo.GetPost(c, slug)
+	post, err := this.postsRepo.GetPost(c, uuid.MustParse(query.Slug))
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return
 	}
 
-	if post.AuthorID != userId.(uuid.UUID) {
+	if post.AuthorID != userId {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	_, err = this.documentsRepo.DeleteDocument(c, slug, id)
+	_, err = this.documentsRepo.DeleteDocument(c, post.Slug, uuid.MustParse(query.ID))
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	this.documentChan <- models.NewDocumentChanItem(models.DELETE, slug, id)
+	this.documentChan <- models.NewDocumentChanItem(models.DELETE, post.Slug, uuid.MustParse(query.ID))
 
 	c.Status(http.StatusNoContent)
 }
