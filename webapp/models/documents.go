@@ -9,10 +9,10 @@ import (
 )
 
 type DocumentDTO struct {
-	Filename    string
-	ContentType string
-	Content     []byte
-	PostSlug    uuid.UUID
+	Filename    string `json:"filename"`
+	ContentType string `json:"contentType"`
+	Content     []byte `json:"content"`
+	PostSlug    uuid.UUID `json:"postSlug"`
 }
 
 type DocumentsFilter struct {

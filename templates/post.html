@@ -9,6 +9,15 @@
 </head>
 
 <body>
+    <script>
+        let documentContentTextarea = {};
+
+        let documentContentView = {};
+        let documentContentEdit = {};
+        let documentContentAcceptButton = {};
+        let documentContentDiscardButton = {};
+    </script>
+
     {{template "navbar" .}}
     {{template "post-view" dict "Post" .Post "IsAuthor" (.Post.IsAuthor .User.ID)}}
 
@@ -25,7 +34,40 @@
             if (event.detail.target.id === "delete-document-button") {
                 window.location.reload()
             }
+
+            if (event.detail.target.id === "post-description-update") {
+                window.location.reload()
+            }
         })
+
+        let descriptionPreview = document.getElementById("post-description-preview");
+        let descriptionTextarea = document.getElementById("post-description-textarea")
+        descriptionTextarea.addEventListener("input", function(event) {
+            let text = descriptionTextarea.value;
+            descriptionPreview.innerHTML = text;
+        });
+
+        let postDescriptionEdit = document.getElementById("post-description-edit");
+        let postDescriptionView = document.getElementById("post-description-view");
+        let postDescriptionAcceptButton = document.getElementById("post-description-accept-button");
+        let postDescriptionDiscardButton = document.getElementById("post-description-discard-button");
+        let postDescriptionMarkdown = document.getElementById("post-description-markdown");
+
+        postDescriptionView.addEventListener("click", function() {
+            descriptionTextarea.value = postDescriptionMarkdown.innerHTML;
+
+            postDescriptionView.classList.add("hidden");
+            postDescriptionEdit.classList.remove("hidden");
+        });
+
+        postDescriptionDiscardButton.addEventListener("click", function() {
+            postDescriptionView.classList.remove("hidden");
+            postDescriptionEdit.classList.add("hidden");
+        });
+
+        document.getElementById("post-file-input").addEventListener("change", function() {
+            htmx.trigger("#file-upload-form", "uploadFiles");
+        });
     </script>
 </body>
 
@@ -35,16 +77,37 @@
 <div class="bg-gray min-h-screen flex flex-col justify-start items-center">
     <div class="container mx-auto p-4 divide-y divide-gray-100">
         <div class="py-4">
-            <h1 class="text-2xl font-bold text-gray-800">{{.Post.Name}}</h1>
-        </div>
-        <div class="py-4">
             <div class="flex justify-between items-center">
                 <div class="flex items-center">
-                    <p class="text-sm text-gray-500">{{.Post.Description}}</p>
+                    <h1 class="text-2xl font-bold text-gray-800">{{.Post.Name}}</h1>
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">Author: {{.Post.Author.Name}}</p>
                 </div>
+            </div>
+        </div>
+        <div class="py-4">
+            <div id="post-description-view">
+                <zero-md>
+                    <script id="post-description-markdown" type="text/markdown">{{.Post.Description}}</script>
+                </zero-md>
+            </div>
+            <div id="post-description-edit" class="hidden">
+                <form id="post-description-update" name="post-form" hx-put="/api/posts/{{.Post.Slug}}" hx-trigger="submit" hx-ext="json-enc" class="flex justify-between space-x-4">
+                    <div class="flex flex-grow space-x-4">
+                        <textarea id="post-description-textarea" name="description" rows="3"
+                            class="block w-1/2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"></textarea>
+                        <zero-md>
+                            <script id="post-description-preview" type="text/markdown"></script>
+                        </zero-md>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button id="post-description-accept-button" type="submit"
+                            class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Accept</button>
+                        <button id="post-description-discard-button" type="reset"
+                            class="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Discard</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -92,12 +155,10 @@
             <h1 class="text-2xl font-bold text-gray-800">Settings</h1>
         </div>
         <div class="py-4">
-            <form id="file-upload-form" hx-encoding="multipart/form-data" hx-post="/api/posts/{{.Post.Slug}}/documents">
+            <form id="file-upload-form" hx-encoding="multipart/form-data" hx-post="/api/posts/{{.Post.Slug}}/documents" hx-trigger="uploadFiles">
                 <label class="block text-sm font-medium leading-6 text-gray-900" for="post-file-input">Upload
                     file</label>
                 <input class="mt-2" id="post-file-input" type="file" name="file" multiple>
-                <button id="form-upload-button"
-                    class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Upload</button>
             </form>
         </div>
 
@@ -112,22 +173,77 @@
 {{end}}
 
 {{define "document-view"}}
-<div class="flex justify-between items-center">
-    <div>
-        <h3 class="text-sm font-semibold leading-6 text-gray-900">{{.Document.Filename}}</h3>
-        <pre class="mt-1 text-xs leading-5 text-gray-500">{{.Document.ParseContent}}</pre>
-    </div>
-    <div>
-        {{if .IsAuthor}}
-        <button
-            class="rounded-md bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Update</button>
-
-        <button id="delete-document-button"
-            class="rounded-md bg-red-500 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
-            hx-delete="/api/posts/{{.Document.PostSlug}}/documents/{{.Document.ID}}">Delete</button>
-        {{end}}
+<div id="document-content-view-{{.Document.ID}}">
+    <div class="flex justify-between items-center">
+        <div>
+            <h3 class="text-sm font-semibold leading-6 text-gray-900">{{.Document.Filename}}</h3>
+            <pre class="mt-1 text-xs leading-5 text-gray-500">{{.Document.ParseContent}}</pre>
+        </div>
+        <div>
+            {{if .IsAuthor}}
+            <button id="delete-document-button"
+                class="rounded-md bg-red-500 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+                hx-delete="/api/posts/{{.Document.PostSlug}}/documents/{{.Document.ID}}">Delete</button>
+            {{end}}
+        </div>
     </div>
 </div>
+<div id="document-content-edit-{{.Document.ID}}" class="hidden">
+    <form id="document-content-update-{{.Document.ID}}" class="flex justify-between space-x-4">
+        <div class="flex flex-grow space-x-4">
+            <textarea id="document-content-textarea-{{.Document.ID}}" name="content" rows="8"
+                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"></textarea>
+        </div>
+        <div class="flex items-center space-x-4">
+            <button id="document-content-accept-button-{{.Document.ID}}" type="submit"
+                class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Accept</button>
+            <button id="document-content-discard-button-{{.Document.ID}}" type="reset"
+                class="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Discard</button>
+        </div>
+    </form>
+</div>
+<script>
+    documentContentTextarea["{{.Document.ID}}"] = document.getElementById("document-content-textarea-{{.Document.ID}}")
+
+    documentContentView["{{.Document.ID}}"] = document.getElementById("document-content-view-{{.Document.ID}}")
+    documentContentEdit["{{.Document.ID}}"] = document.getElementById("document-content-edit-{{.Document.ID}}")
+    documentContentAcceptButton["{{.Document.ID}}"] = document.getElementById("document-content-accept-button-{{.Document.ID}}")
+    documentContentDiscardButton["{{.Document.ID}}"] = document.getElementById("document-content-discard-button-{{.Document.ID}}")
+
+    documentContentView["{{.Document.ID}}"].addEventListener("click", function() {
+        documentContentTextarea["{{.Document.ID}}"].value = "{{.Document.ParseContent}}"
+
+        documentContentView["{{.Document.ID}}"].classList.add("hidden");
+        documentContentEdit["{{.Document.ID}}"].classList.remove("hidden");
+    });
+
+    documentContentDiscardButton["{{.Document.ID}}"].addEventListener("click", function() {
+        documentContentView["{{.Document.ID}}"].classList.remove("hidden");
+        documentContentEdit["{{.Document.ID}}"].classList.add("hidden");
+    });
+
+    documentContentUpdateForm = document.getElementById("document-content-update-{{.Document.ID}}")
+    documentContentUpdateForm.addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        let text = documentContentTextarea["{{.Document.ID}}"].value
+        let bytes = new TextEncoder().encode(text)
+        let content = btoa(String.fromCharCode(...bytes))
+        let body = {"content": content}
+
+        fetch("/api/posts/{{.Document.PostSlug}}/documents/{{.Document.ID}}", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body)
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload()
+            }
+        });
+    });
+</script>
 {{end}}
 
 {{define "search"}}

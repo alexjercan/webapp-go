@@ -22,6 +22,13 @@
         document.getElementById("post-cancel-button").addEventListener("click", function () {
             window.location.href = "/home"
         })
+
+        let descriptionPreview = document.getElementById("post-description-preview");
+        let textareaElement = document.getElementById("post-description")
+        textareaElement.addEventListener("input", function(event) {
+            let text = textareaElement.value;
+            descriptionPreview.innerHTML = text;
+        });
     </script>
 </body>
 
@@ -56,8 +63,13 @@
                             <label for="post-description"
                                 class="block text-sm font-medium leading-6 text-gray-900">Description</label>
                             <div class="mt-2">
-                                <textarea id="post-description" name="description" rows="3"
-                                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"></textarea>
+                                <div class="flex space-x-4">
+                                    <textarea id="post-description" name="description" rows="3"
+                                        class="block w-1/2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"></textarea>
+                                    <zero-md>
+                                        <script id="post-description-preview" type="text/markdown"></script>
+                                    </zero-md>
+                                </div>
                             </div>
                             <p class="mt-3 text-sm leading-6 text-gray-600">Write a few sentences about the post.</p>
                         </div>
