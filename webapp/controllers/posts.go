@@ -28,15 +28,15 @@ func NewPostsController(repo repositories.PostsRepository) PostsController {
 }
 
 type PostGetQuery struct {
-    Slug string `uri:"slug" binding:"required,uuid"`
+	Slug string `uri:"slug" binding:"required,uuid"`
 }
 
 func (this postsController) GetPost(c *gin.Context) {
-    query := PostGetQuery{}
-    if err := c.ShouldBindUri(&query); err != nil {
-        c.AbortWithError(http.StatusBadRequest, err)
-        return
-    }
+	query := PostGetQuery{}
+	if err := c.ShouldBindUri(&query); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
 
 	post, err := this.repo.GetPost(c, uuid.MustParse(query.Slug))
 	if err != nil {
@@ -61,7 +61,7 @@ func (this postsController) GetPosts(c *gin.Context) {
 func (this postsController) CreatePost(c *gin.Context) {
 	userId := c.MustGet(middlewares.USER_ID_KEY).(uuid.UUID)
 
-    dto := models.PostDTO{}
+	dto := models.PostDTO{}
 	if err := c.ShouldBind(&dto); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
@@ -77,17 +77,17 @@ func (this postsController) CreatePost(c *gin.Context) {
 }
 
 type PostUpdateQuery struct {
-    Slug string `uri:"slug" binding:"required,uuid"`
+	Slug string `uri:"slug" binding:"required,uuid"`
 }
 
 func (this postsController) UpdatePost(c *gin.Context) {
 	userId := c.MustGet(middlewares.USER_ID_KEY).(uuid.UUID)
 
-    query := PostUpdateQuery{}
-    if err := c.ShouldBindUri(&query); err != nil {
-        c.AbortWithError(http.StatusBadRequest, err)
-        return
-    }
+	query := PostUpdateQuery{}
+	if err := c.ShouldBindUri(&query); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
 
 	post, err := this.repo.GetPost(c, uuid.MustParse(query.Slug))
 	if err != nil {
@@ -100,7 +100,7 @@ func (this postsController) UpdatePost(c *gin.Context) {
 		return
 	}
 
-    dto := models.PostDTO{}
+	dto := models.PostDTO{}
 	if err := c.ShouldBind(&dto); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
@@ -116,17 +116,17 @@ func (this postsController) UpdatePost(c *gin.Context) {
 }
 
 type PostDeleteQuery struct {
-    Slug string `uri:"slug" binding:"required,uuid"`
+	Slug string `uri:"slug" binding:"required,uuid"`
 }
 
 func (this postsController) DeletePost(c *gin.Context) {
 	userId := c.MustGet(middlewares.USER_ID_KEY).(uuid.UUID)
 
-    query := PostDeleteQuery{}
-    if err := c.ShouldBindUri(&query); err != nil {
-        c.AbortWithError(http.StatusBadRequest, err)
-        return
-    }
+	query := PostDeleteQuery{}
+	if err := c.ShouldBindUri(&query); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
 
 	post, err := this.repo.GetPost(c, uuid.MustParse(query.Slug))
 	if err != nil {

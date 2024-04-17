@@ -31,16 +31,16 @@ func NewDocumentsController(documentsRepo repositories.DocumentsRepository, post
 }
 
 type DocumentGetQuery struct {
-    Slug uuid.UUID `form:"slug" binding:"required"`
-    ID uuid.UUID `form:"id" binding:"required"`
+	Slug uuid.UUID `form:"slug" binding:"required"`
+	ID   uuid.UUID `form:"id" binding:"required"`
 }
 
 func (this documentsController) GetDocument(c *gin.Context) {
-    query := DocumentGetQuery{}
-    if err := c.ShouldBind(&query); err != nil {
-        c.AbortWithError(http.StatusBadRequest, err)
-        return
-    }
+	query := DocumentGetQuery{}
+	if err := c.ShouldBind(&query); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
 
 	document, err := this.documentsRepo.GetDocument(c, query.Slug, query.ID)
 	if err != nil {
@@ -52,15 +52,15 @@ func (this documentsController) GetDocument(c *gin.Context) {
 }
 
 type DocumentsGetQuery struct {
-    Slug string `uri:"slug" binding:"required,uuid"`
+	Slug string `uri:"slug" binding:"required,uuid"`
 }
 
 func (this documentsController) GetDocuments(c *gin.Context) {
-    query := DocumentsGetQuery{}
-    if err := c.ShouldBindUri(&query); err != nil {
-        c.AbortWithError(http.StatusBadRequest, err)
-        return
-    }
+	query := DocumentsGetQuery{}
+	if err := c.ShouldBindUri(&query); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
 
 	documents, err := this.documentsRepo.GetDocuments(c, uuid.MustParse(query.Slug))
 	if err != nil {
@@ -72,17 +72,17 @@ func (this documentsController) GetDocuments(c *gin.Context) {
 }
 
 type DocumentCreateQuery struct {
-    Slug string `uri:"slug" binding:"required,uuid"`
+	Slug string `uri:"slug" binding:"required,uuid"`
 }
 
 func (this documentsController) CreateDocument(c *gin.Context) {
 	userId := c.MustGet(middlewares.USER_ID_KEY).(uuid.UUID)
 
-    query := DocumentCreateQuery{}
-    if err := c.ShouldBindUri(&query); err != nil {
-        c.AbortWithError(http.StatusBadRequest, err)
-        return
-    }
+	query := DocumentCreateQuery{}
+	if err := c.ShouldBindUri(&query); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
 
 	post, err := this.postsRepo.GetPost(c, uuid.MustParse(query.Slug))
 	if err != nil {
@@ -138,18 +138,18 @@ func (this documentsController) CreateDocument(c *gin.Context) {
 }
 
 type DocumentUpdateQuery struct {
-    Slug string `uri:"slug" binding:"required,uuid"`
-    ID string `uri:"id" binding:"required,uuid"`
+	Slug string `uri:"slug" binding:"required,uuid"`
+	ID   string `uri:"id" binding:"required,uuid"`
 }
 
 func (this documentsController) UpdateDocument(c *gin.Context) {
 	userId := c.MustGet(middlewares.USER_ID_KEY).(uuid.UUID)
 
-    query := DocumentUpdateQuery{}
-    if err := c.ShouldBindUri(&query); err != nil {
-        c.AbortWithError(http.StatusBadRequest, err)
-        return
-    }
+	query := DocumentUpdateQuery{}
+	if err := c.ShouldBindUri(&query); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
 
 	post, err := this.postsRepo.GetPost(c, uuid.MustParse(query.Slug))
 	if err != nil {
@@ -180,18 +180,18 @@ func (this documentsController) UpdateDocument(c *gin.Context) {
 }
 
 type DocumentDeleteQuery struct {
-    Slug string `uri:"slug" binding:"required,uuid"`
-    ID string `uri:"id" binding:"required,uuid"`
+	Slug string `uri:"slug" binding:"required,uuid"`
+	ID   string `uri:"id" binding:"required,uuid"`
 }
 
 func (this documentsController) DeleteDocument(c *gin.Context) {
 	userId := c.MustGet(middlewares.USER_ID_KEY).(uuid.UUID)
 
-    query := DocumentDeleteQuery{}
-    if err := c.ShouldBindUri(&query); err != nil {
-        c.AbortWithError(http.StatusBadRequest, err)
-        return
-    }
+	query := DocumentDeleteQuery{}
+	if err := c.ShouldBindUri(&query); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
 
 	post, err := this.postsRepo.GetPost(c, uuid.MustParse(query.Slug))
 	if err != nil {

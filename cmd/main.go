@@ -105,7 +105,7 @@ func main() {
 	authorized.GET("/user", viewController.GetUserPage)
 	authorized.GET("/posts/:slug", viewController.GetPostPage)
 	authorized.GET("/create", viewController.GetCreatePostPage)
-    authorized.GET("/search/:slug", viewController.SearchPost)
+	authorized.GET("/search/:slug", viewController.SearchPost)
 
 	router.GET("/auth/login", authController.Login)
 	router.GET("/auth/callback", authController.Callback)

@@ -33,9 +33,9 @@ func (this documentsRepository) GetDocument(c context.Context, slug uuid.UUID, i
 func (this documentsRepository) GetDocuments(c context.Context, slug uuid.UUID) (documents []models.Document, err error) {
 	documents = []models.Document{}
 
-    q := this.db.NewSelect().Model(&documents).Where("post_slug = ?", slug)
+	q := this.db.NewSelect().Model(&documents).Where("post_slug = ?", slug)
 
-    err = q.Scan(c)
+	err = q.Scan(c)
 
 	return
 }

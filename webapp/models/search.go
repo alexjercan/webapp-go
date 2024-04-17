@@ -6,6 +6,6 @@ type SearchQuery struct {
 }
 
 type SearchResult struct {
-    Scores []DocumentScore `json:"scores"`
-    Response    string `json:"response"`
+	Scores   []DocumentScore `json:"scores"`
+	Response string          `json:"response"`
 }

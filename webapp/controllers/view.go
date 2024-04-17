@@ -3,11 +3,11 @@ package controllers
 import (
 	"net/http"
 
+	"log/slog"
 	"webapp-go/webapp/middlewares"
 	"webapp-go/webapp/models"
 	"webapp-go/webapp/repositories"
 	"webapp-go/webapp/services"
-    "log/slog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -70,7 +70,7 @@ func (this viewController) GetUserPage(c *gin.Context) {
 }
 
 type PostPageGetParams struct {
-    Slug string `uri:"slug" binding:"required,uuid"`
+	Slug string `uri:"slug" binding:"required,uuid"`
 }
 
 func (this viewController) GetPostPage(c *gin.Context) {
@@ -82,11 +82,11 @@ func (this viewController) GetPostPage(c *gin.Context) {
 		return
 	}
 
-    params := PostPageGetParams{}
-    if err := c.ShouldBindUri(&params); err != nil {
-        c.AbortWithError(http.StatusBadRequest, err)
-        return
-    }
+	params := PostPageGetParams{}
+	if err := c.ShouldBindUri(&params); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
 
 	post, err := this.postsRepo.GetPost(c, uuid.MustParse(params.Slug))
 	if err != nil {
@@ -112,15 +112,15 @@ func (this viewController) GetCreatePostPage(c *gin.Context) {
 }
 
 type SearchPageParams struct {
-    Slug string `uri:"slug" binding:"required,uuid"`
+	Slug string `uri:"slug" binding:"required,uuid"`
 }
 
 func (this viewController) SearchPost(c *gin.Context) {
-    params := SearchPageParams{}
-    if err := c.ShouldBindUri(&params); err != nil {
-        c.AbortWithError(http.StatusBadRequest, err)
-        return
-    }
+	params := SearchPageParams{}
+	if err := c.ShouldBindUri(&params); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
 
 	query := models.SearchQuery{Limit: 3}
 	if err := c.ShouldBind(&query); err != nil {
@@ -128,22 +128,22 @@ func (this viewController) SearchPost(c *gin.Context) {
 		return
 	}
 
-    searchResult, err := this.embeddingsService.GetSearchResult(c, uuid.MustParse(params.Slug), query)
+	searchResult, err := this.embeddingsService.GetSearchResult(c, uuid.MustParse(params.Slug), query)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-    documents := []models.Document{}
+	documents := []models.Document{}
 	for _, s := range searchResult.Scores {
-        d, err := this.documentsRepo.GetDocument(c, uuid.MustParse(params.Slug), s.DocumentID)
-        if err != nil {
-            slog.Error("Error getting document with id", "id", s.DocumentID, "error", err.Error())
-            continue
-        }
+		d, err := this.documentsRepo.GetDocument(c, uuid.MustParse(params.Slug), s.DocumentID)
+		if err != nil {
+			slog.Error("Error getting document with id", "id", s.DocumentID, "error", err.Error())
+			continue
+		}
 
-        documents = append(documents, d)
+		documents = append(documents, d)
 	}
 
-    c.HTML(http.StatusOK, "search", gin.H{"Documents": documents, "Response": searchResult.Response})
+	c.HTML(http.StatusOK, "search", gin.H{"Documents": documents, "Response": searchResult.Response})
 }

@@ -24,15 +24,15 @@ func NewEmbeddingsController(documentsRepo repositories.DocumentsRepository, emb
 }
 
 type SearchGetParams struct {
-    Slug string `uri:"slug" binding:"required,uuid"`
+	Slug string `uri:"slug" binding:"required,uuid"`
 }
 
 func (this embeddingsController) GetSearchResult(c *gin.Context) {
-    params := SearchGetParams{}
-    if err := c.ShouldBindUri(&params); err != nil {
-        c.AbortWithError(http.StatusBadRequest, err)
-        return
-    }
+	params := SearchGetParams{}
+	if err := c.ShouldBindUri(&params); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
 
 	query := models.SearchQuery{Limit: 3}
 	if err := c.ShouldBind(&query); err != nil {

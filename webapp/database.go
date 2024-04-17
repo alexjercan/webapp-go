@@ -8,7 +8,7 @@ import (
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
-    "github.com/uptrace/bun/extra/bundebug"
+	"github.com/uptrace/bun/extra/bundebug"
 )
 
 func DBConnection(cfg config.Config) *bun.DB {
@@ -21,7 +21,7 @@ func DBConnection(cfg config.Config) *bun.DB {
 	)
 	sqldb := sql.OpenDB(pgconn)
 	db := bun.NewDB(sqldb, pgdialect.New())
-    db.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(false)))
+	db.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(false)))
 
 	return db
 }

@@ -41,15 +41,15 @@ func (this embeddingsRepository) GetSimilarEmbeddings(c context.Context, slug uu
 	scores := []models.DocumentScore{}
 
 	err := this.db.NewSelect().
-        Table("document_embeddings").
-        Column("document_embeddings.document_id").
-        ColumnExpr("1 - (embeddings <=> ?) AS score", embedding).
-        Join("JOIN documents as d").
-        JoinOn("document_embeddings.document_id = d.id").
-        Where("post_slug = ?", slug).
-        Order("score").
-        Limit(limit).
-        Scan(c, &scores)
+		Table("document_embeddings").
+		Column("document_embeddings.document_id").
+		ColumnExpr("1 - (embeddings <=> ?) AS score", embedding).
+		Join("JOIN documents as d").
+		JoinOn("document_embeddings.document_id = d.id").
+		Where("post_slug = ?", slug).
+		Order("score").
+		Limit(limit).
+		Scan(c, &scores)
 
 	return scores, err
 }

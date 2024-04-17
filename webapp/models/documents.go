@@ -9,9 +9,9 @@ import (
 )
 
 type DocumentDTO struct {
-	Filename    string `json:"filename"`
-	ContentType string `json:"contentType"`
-	Content     []byte `json:"content"`
+	Filename    string    `json:"filename"`
+	ContentType string    `json:"contentType"`
+	Content     []byte    `json:"content"`
 	PostSlug    uuid.UUID `json:"postSlug"`
 }
 
