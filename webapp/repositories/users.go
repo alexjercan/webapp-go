@@ -11,10 +11,8 @@ import (
 type UsersRepository interface {
 	GetUser(c context.Context, id uuid.UUID) (models.User, error)
 	GetUserByLogin(c context.Context, githubUsername string) (models.User, error)
-	GetUsers(c context.Context) ([]models.User, error)
 	CreateUser(c context.Context, user models.User) (models.User, error)
 	UpdateUser(c context.Context, id uuid.UUID, user models.User) (models.User, error)
-	DeleteUser(c context.Context, id uuid.UUID) (uuid.UUID, error)
 }
 
 type usersRepository struct {
@@ -37,12 +35,6 @@ func (this usersRepository) GetUserByLogin(c context.Context, githubUsername str
 	return
 }
 
-func (this usersRepository) GetUsers(c context.Context) (users []models.User, err error) {
-	err = this.db.NewSelect().Model(&users).Scan(c)
-
-	return
-}
-
 func (this usersRepository) CreateUser(c context.Context, user models.User) (models.User, error) {
 	_, err := this.db.NewInsert().Model(&user).Exec(c)
 
@@ -55,10 +47,4 @@ func (this usersRepository) UpdateUser(c context.Context, id uuid.UUID, user mod
 	_, err := this.db.NewUpdate().Model(&user).OmitZero().WherePK().Exec(c)
 
 	return user, err
-}
-
-func (this usersRepository) DeleteUser(c context.Context, id uuid.UUID) (uuid.UUID, error) {
-	_, err := this.db.NewDelete().Model((*models.User)(nil)).Where("id = ?", id).Exec(c)
-
-	return id, err
 }

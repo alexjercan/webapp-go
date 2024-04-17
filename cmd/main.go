@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"text/template"
 	"webapp-go/webapp"
 	"webapp-go/webapp/config"
@@ -31,6 +32,8 @@ func main() {
 
 	defer db.Close()
 
+    slog.SetLogLoggerLevel(slog.LevelDebug)
+
 	llm, err := ollama.New(ollama.WithModel("llama2"))
 	if err != nil {
 		panic(err)
@@ -56,8 +59,6 @@ func main() {
 
 	go embeddingsService.Worker(ctx)
 
-	// Creates a gin router with default middleware:
-	// logger and recovery (crash-free) middleware
 	router := gin.Default()
 
 	store := cookie.NewStore([]byte(cfg.AuthStore.Secret))
@@ -111,8 +112,5 @@ func main() {
 	router.GET("/auth/callback", authController.Callback)
 	authorized.GET("/auth/logout", authController.Logout)
 
-	// By default it serves on :8080 unless a
-	// PORT environment variable was defined.
 	router.Run(fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port))
-	// router.Run(":3000") for a hard coded port
 }

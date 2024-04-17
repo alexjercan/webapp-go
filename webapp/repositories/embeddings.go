@@ -9,8 +9,6 @@ import (
 )
 
 type EmbeddingsRepository interface {
-	GetEmbedding(c context.Context, id uuid.UUID) (models.DocumentEmbedding, error)
-	GetEmbeddingFor(c context.Context, documentID uuid.UUID) (models.DocumentEmbedding, error)
 	GetSimilarEmbeddings(c context.Context, slug uuid.UUID, embedding []float32, limit int) ([]models.DocumentScore, error)
 	CreateEmbedding(c context.Context, embedding models.DocumentEmbedding) (models.DocumentEmbedding, error)
 	UpdateEmbeddingFor(c context.Context, documentID uuid.UUID, embedding models.DocumentEmbedding) (models.DocumentEmbedding, error)
@@ -23,18 +21,6 @@ type embeddingsRepository struct {
 
 func NewEmbeddingsRepository(db *bun.DB) EmbeddingsRepository {
 	return embeddingsRepository{db}
-}
-
-func (this embeddingsRepository) GetEmbedding(c context.Context, id uuid.UUID) (embedding models.DocumentEmbedding, err error) {
-	err = this.db.NewSelect().Model(&embedding).Where("id = ?", id).Scan(c)
-
-	return
-}
-
-func (this embeddingsRepository) GetEmbeddingFor(c context.Context, documentID uuid.UUID) (embedding models.DocumentEmbedding, err error) {
-	err = this.db.NewSelect().Model(&embedding).Where("document_id = ?", documentID).Scan(c)
-
-	return
 }
 
 func (this embeddingsRepository) GetSimilarEmbeddings(c context.Context, slug uuid.UUID, embedding []float32, limit int) ([]models.DocumentScore, error) {
