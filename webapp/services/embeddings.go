@@ -3,10 +3,10 @@ package services
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 	"webapp-go/webapp/models"
 	"webapp-go/webapp/repositories"
+    "log/slog"
 
 	"github.com/google/uuid"
 	"github.com/tmc/langchaingo/llms/ollama"
@@ -31,7 +31,7 @@ func NewEmbeddingsService(documentsRepo repositories.DocumentsRepository, embedd
 func (this embeddingsService) createEmbeddings(c context.Context, slug uuid.UUID, id uuid.UUID) {
 	document, err := this.documentsRepo.GetDocument(c, slug, id)
 	if err != nil {
-		log.Printf("Error getting the document with id %s: %s\n", id, err.Error())
+        slog.Error("Error getting the document with id", "id", id, "error", err.Error())
 		return
 	}
 
@@ -39,13 +39,13 @@ func (this embeddingsService) createEmbeddings(c context.Context, slug uuid.UUID
 
 	embeddings, err := this.llm.CreateEmbedding(c, []string{content})
 	if err != nil {
-		log.Printf("Error generating embeddings for document with id %s: %s\n", id, err.Error())
+        slog.Error("Error generating embeddings for document with id", "id", id, "error", err.Error())
 		return
 	}
 
 	_, err = this.embeddingsRepo.CreateEmbedding(c, models.NewDocumentEmbedding(id, embeddings[0]))
 	if err != nil {
-		log.Printf("Error saving the embeddings for document with id %s: %s\n", id, err.Error())
+        slog.Error("Error saving the embeddings for document with id", "id", id, "error", err.Error())
 		return
 	}
 }
@@ -53,7 +53,7 @@ func (this embeddingsService) createEmbeddings(c context.Context, slug uuid.UUID
 func (this embeddingsService) updateEmbeddings(c context.Context, slug uuid.UUID, documentID uuid.UUID) {
 	document, err := this.documentsRepo.GetDocument(c, slug, documentID)
 	if err != nil {
-		log.Printf("Error getting the document with id %s: %s\n", documentID, err.Error())
+        slog.Error("Error getting the document with id", "id", documentID, "error", err.Error())
 		return
 	}
 
@@ -61,13 +61,13 @@ func (this embeddingsService) updateEmbeddings(c context.Context, slug uuid.UUID
 
 	embeddings, err := this.llm.CreateEmbedding(c, []string{content})
 	if err != nil {
-		log.Printf("Error generating embeddings for document with id %s: %s\n", documentID, err.Error())
+        slog.Error("Error generating embeddings for document with id", "id", documentID, "error", err.Error())
 		return
 	}
 
 	_, err = this.embeddingsRepo.UpdateEmbeddingFor(c, documentID, models.NewDocumentEmbedding(documentID, embeddings[0]))
 	if err != nil {
-		log.Printf("Error saving the embeddings for document with id %s: %s\n", documentID, err.Error())
+        slog.Error("Error saving the embeddings for document with id", "id", documentID, "error", err.Error())
 		return
 	}
 }
@@ -75,7 +75,7 @@ func (this embeddingsService) updateEmbeddings(c context.Context, slug uuid.UUID
 func (this embeddingsService) deleteEmbeddings(c context.Context, documentID uuid.UUID) {
 	_, err := this.embeddingsRepo.DeleteEmbeddingFor(c, documentID)
 	if err != nil {
-		log.Printf("Error deleting the embeddings for document with id %s: %s\n", documentID, err.Error())
+        slog.Error("Error deleting the embeddings for document with id", "id", documentID, "error", err.Error())
 		return
 	}
 }
@@ -90,7 +90,7 @@ func (this embeddingsService) Worker(c context.Context) {
 		case models.DELETE:
 			this.deleteEmbeddings(c, d.ID)
 		default:
-			log.Printf("Unkown command: %d\n", d.Command)
+            slog.Error("Unknown command", "command", d.Command)
 		}
 	}
 }
@@ -108,6 +108,8 @@ func (this embeddingsService) buildPrompt(question string, documents []models.Do
 }
 
 func (this embeddingsService) GetSearchResult(c context.Context, slug uuid.UUID, query models.SearchQuery) (result models.SearchResult, err error) {
+    slog.Info("Searching for ", "query", query.Query)
+
 	es, err := this.llm.CreateEmbedding(c, []string{query.Query})
 	if err != nil {
 		return
@@ -118,23 +120,29 @@ func (this embeddingsService) GetSearchResult(c context.Context, slug uuid.UUID,
 		return
 	}
 
-	documentIds := []uuid.UUID{}
+    documents := []models.Document{}
 	for _, s := range scores {
-		documentIds = append(documentIds, s.DocumentID)
+        d, err := this.documentsRepo.GetDocument(c, slug, s.DocumentID)
+        if err != nil {
+            slog.Error("Error getting document with id", "id", s.DocumentID, "error", err.Error())
+            continue
+        }
+
+        slog.Info("Found document", "filename", d.Filename, "score", s.Score)
+
+        documents = append(documents, d)
 	}
 
-    result.DocumentIDs = documentIds
-
-	filter := models.DocumentsFilter{IDs: documentIds}
-	documents, err := this.documentsRepo.GetDocuments(c, slug, filter)
-
     prompt := this.buildPrompt(query.Query, documents)
+
+    slog.Info("Using prompt", "prompt", prompt)
 
     response, err := this.llm.Call(c, prompt)
     if (err != nil) {
         return
     }
 
+    result.Scores = scores
     result.Response = response
 
 	return

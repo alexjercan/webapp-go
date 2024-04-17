@@ -7,6 +7,7 @@ import (
 	"webapp-go/webapp/models"
 	"webapp-go/webapp/repositories"
 	"webapp-go/webapp/services"
+    "log/slog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -133,8 +134,16 @@ func (this viewController) SearchPost(c *gin.Context) {
 		return
 	}
 
-	filter := models.DocumentsFilter{IDs: searchResult.DocumentIDs}
-	documents, err := this.documentsRepo.GetDocuments(c, uuid.MustParse(params.Slug), filter)
+    documents := []models.Document{}
+	for _, s := range searchResult.Scores {
+        d, err := this.documentsRepo.GetDocument(c, uuid.MustParse(params.Slug), s.DocumentID)
+        if err != nil {
+            slog.Error("Error getting document with id", "id", s.DocumentID, "error", err.Error())
+            continue
+        }
+
+        documents = append(documents, d)
+	}
 
     c.HTML(http.StatusOK, "search", gin.H{"Documents": documents, "Response": searchResult.Response})
 }
