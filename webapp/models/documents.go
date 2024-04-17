@@ -15,10 +15,6 @@ type DocumentDTO struct {
 	PostSlug    uuid.UUID `json:"postSlug"`
 }
 
-type DocumentsFilter struct {
-    IDs []uuid.UUID `form:"ids"`
-}
-
 type Document struct {
 	bun.BaseModel `bun:"table:documents,alias:d"`
 

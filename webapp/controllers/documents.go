@@ -62,13 +62,7 @@ func (this documentsController) GetDocuments(c *gin.Context) {
         return
     }
 
-    filter := models.DocumentsFilter{}
-	if err := c.ShouldBind(&filter); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
-
-	documents, err := this.documentsRepo.GetDocuments(c, uuid.MustParse(query.Slug), filter)
+	documents, err := this.documentsRepo.GetDocuments(c, uuid.MustParse(query.Slug))
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return

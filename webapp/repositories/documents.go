@@ -10,7 +10,7 @@ import (
 
 type DocumentsRepository interface {
 	GetDocument(c context.Context, slug uuid.UUID, id uuid.UUID) (models.Document, error)
-	GetDocuments(c context.Context, slug uuid.UUID, filter models.DocumentsFilter) ([]models.Document, error)
+	GetDocuments(c context.Context, slug uuid.UUID) ([]models.Document, error)
 	CreateDocument(c context.Context, document models.Document) (models.Document, error)
 	UpdateDocument(c context.Context, slug uuid.UUID, id uuid.UUID, document models.Document) (models.Document, error)
 	DeleteDocument(c context.Context, slug uuid.UUID, id uuid.UUID) (uuid.UUID, error)
@@ -30,14 +30,10 @@ func (this documentsRepository) GetDocument(c context.Context, slug uuid.UUID, i
 	return
 }
 
-func (this documentsRepository) GetDocuments(c context.Context, slug uuid.UUID, filter models.DocumentsFilter) (documents []models.Document, err error) {
+func (this documentsRepository) GetDocuments(c context.Context, slug uuid.UUID) (documents []models.Document, err error) {
 	documents = []models.Document{}
 
     q := this.db.NewSelect().Model(&documents).Where("post_slug = ?", slug)
-
-    if len(filter.IDs) > 0 {
-        q = q.Where("id IN (?)", bun.In(filter.IDs))
-    }
 
     err = q.Scan(c)
 
