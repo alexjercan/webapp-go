@@ -24,6 +24,7 @@
     {{template "navbar" .}}
     {{template "post-view" dict "Post" .Post "IsAuthor" (.Post.IsAuthor .User.ID)}}
 
+    {{if .Post.IsAuthor}}
     <script>
         document.addEventListener("htmx:afterRequest", function (event) {
             if (event.detail.target.id === "delete-post-button") {
@@ -45,6 +46,7 @@
 
         let descriptionPreview = document.getElementById("post-description-preview");
         let descriptionTextarea = document.getElementById("post-description-textarea")
+
         descriptionTextarea.addEventListener("input", function(event) {
             let text = descriptionTextarea.value;
             descriptionPreview.innerHTML = text;
@@ -73,11 +75,15 @@
             htmx.trigger("#file-upload-form", "uploadFiles");
         });
 
+    </script>
+    {{end}}
+
+    <script>
         let postName = document.getElementById("post-name")
         let postDescription = document.getElementById("post-description")
 
         postName.addEventListener("click", function() {
-            postDescriptionView.classList.toggle("hidden")
+            postDescription.classList.toggle("hidden")
         });
     </script>
 </body>
@@ -221,7 +227,9 @@
     documentFilename["{{.Document.ID}}"].addEventListener("click", function() {
         documentView["{{.Document.ID}}"].classList.toggle("hidden")
     });
-
+</script>
+{{if .IsAuthor}}
+<script>
     documentContentTextarea["{{.Document.ID}}"] = document.getElementById("document-content-textarea-{{.Document.ID}}")
 
     documentContentView["{{.Document.ID}}"] = document.getElementById("document-content-view-{{.Document.ID}}")
@@ -263,6 +271,7 @@
         });
     });
 </script>
+{{end}}
 {{end}}
 
 {{define "search"}}
