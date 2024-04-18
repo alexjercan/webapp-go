@@ -58,6 +58,7 @@
 
         postDescriptionView.addEventListener("click", function() {
             descriptionTextarea.value = postDescriptionMarkdown.innerHTML;
+            descriptionPreview.innerHTML = postDescriptionMarkdown.innerHTML;
 
             postDescriptionView.classList.add("hidden");
             postDescriptionEdit.classList.remove("hidden");
