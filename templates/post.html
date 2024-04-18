@@ -19,35 +19,19 @@
         let documentContentEdit = {};
         let documentContentAcceptButton = {};
         let documentContentDiscardButton = {};
+
+        let deleteDocumentButton = {};
     </script>
 
     {{template "navbar" .}}
     {{template "post-view" dict "Post" .Post "IsAuthor" (.Post.IsAuthor .User.ID)}}
 
-    {{if .Post.IsAuthor}}
+    {{if .Post.IsAuthor .User.ID}}
     <script>
-        document.addEventListener("htmx:afterRequest", function (event) {
-            if (event.detail.target.id === "delete-post-button") {
-                window.location.href = "/home"
-            }
-
-            if (event.detail.target.id === "file-upload-form") {
-                window.location.reload()
-            }
-
-            if (event.detail.target.id === "delete-document-button") {
-                window.location.reload()
-            }
-
-            if (event.detail.target.id === "post-description-update") {
-                window.location.reload()
-            }
-        })
-
         let descriptionPreview = document.getElementById("post-description-preview");
         let descriptionTextarea = document.getElementById("post-description-textarea")
 
-        descriptionTextarea.addEventListener("input", function(event) {
+        descriptionTextarea.addEventListener("input", function (event) {
             let text = descriptionTextarea.value;
             descriptionPreview.innerHTML = text;
         });
@@ -58,7 +42,7 @@
         let postDescriptionDiscardButton = document.getElementById("post-description-discard-button");
         let postDescriptionMarkdown = document.getElementById("post-description-markdown");
 
-        postDescriptionView.addEventListener("click", function() {
+        postDescriptionView.addEventListener("click", function () {
             descriptionTextarea.value = postDescriptionMarkdown.innerHTML;
             descriptionPreview.innerHTML = postDescriptionMarkdown.innerHTML;
 
@@ -66,15 +50,58 @@
             postDescriptionEdit.classList.remove("hidden");
         });
 
-        postDescriptionDiscardButton.addEventListener("click", function() {
+        postDescriptionDiscardButton.addEventListener("click", function () {
             postDescriptionView.classList.remove("hidden");
             postDescriptionEdit.classList.add("hidden");
         });
 
-        document.getElementById("post-file-input").addEventListener("change", function() {
-            htmx.trigger("#file-upload-form", "uploadFiles");
+        let postDescriptionUpdateForm = document.getElementById("post-description-update");
+        postDescriptionUpdateForm.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            let text = descriptionTextarea.value;
+            let body = {"description": text};
+
+            fetch("/api/posts/{{.Post.Slug}}", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(body)
+            }).then(response => {
+                if (response.ok) {
+                    window.location.reload()
+                }
+            });
         });
 
+        let deletePostButton = document.getElementById("delete-post-button");
+        deletePostButton.addEventListener("click", function () {
+            fetch("/api/posts/{{.Post.Slug}}", {
+                method: "DELETE"
+            }).then(response => {
+                if (response.ok) {
+                    window.location.href = "/home"
+                }
+            });
+        });
+
+        let fileUploadForm = document.getElementById("file-upload-form");
+        let postFileInput = document.getElementById("post-file-input");
+        postFileInput.addEventListener("change", function () {
+            event.preventDefault();
+
+            let formData = new FormData(fileUploadForm);
+
+            fetch("/api/posts/{{.Post.Slug}}/documents", {
+                method: "POST",
+                body: formData
+            }).then(response => {
+                if (response.ok) {
+                    window.location.reload()
+                }
+            });
+        });
     </script>
     {{end}}
 
@@ -82,7 +109,7 @@
         let postName = document.getElementById("post-name")
         let postDescription = document.getElementById("post-description")
 
-        postName.addEventListener("click", function() {
+        postName.addEventListener("click", function () {
             postDescription.classList.toggle("hidden")
         });
     </script>
@@ -110,7 +137,7 @@
                 </zero-md>
             </div>
             <div id="post-description-edit" class="hidden">
-                <form id="post-description-update" name="post-form" hx-put="/api/posts/{{.Post.Slug}}" hx-trigger="submit" hx-ext="json-enc" class="flex justify-between space-x-4">
+                <form id="post-description-update" name="post-form" class="flex justify-between space-x-4">
                     <div class="flex flex-grow space-x-4">
                         <textarea id="post-description-textarea" name="description" rows="3"
                             class="block w-1/2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"></textarea>
@@ -173,15 +200,17 @@
             <h1 class="text-2xl font-bold text-gray-800">Settings</h1>
         </div>
         <div class="py-4">
-            <form id="file-upload-form" hx-encoding="multipart/form-data" hx-post="/api/posts/{{.Post.Slug}}/documents" hx-trigger="uploadFiles">
+            <form id="file-upload-form">
                 <label class="block text-sm font-medium leading-6 text-gray-900" for="post-file-input">Upload
                     file</label>
                 <input class="mt-2" id="post-file-input" type="file" name="file" multiple>
             </form>
         </div>
         <div class="py-4">
-            <a id="delete-post-button" type="button" hx-delete="/api/posts/{{.Post.Slug}}"
-                class="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Delete</a>
+            <button id="delete-post-button"
+                class="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
+                Delete
+            </button>
         </div>
     </div>
     {{end}}
@@ -189,7 +218,8 @@
 {{end}}
 
 {{define "document-view"}}
-<h3 id="document-filename-{{.Document.ID}}" class="text-sm font-semibold leading-6 text-gray-900">{{.Document.Filename}}</h3>
+<h3 id="document-filename-{{.Document.ID}}" class="text-sm font-semibold leading-6 text-gray-900">{{.Document.Filename}}
+</h3>
 <div id="document-view-{{.Document.ID}}" class="py-4 hidden">
     <div id="document-content-view-{{.Document.ID}}">
         <div class="flex justify-between items-center">
@@ -198,9 +228,10 @@
             </div>
             <div>
                 {{if .IsAuthor}}
-                <button id="delete-document-button"
-                    class="rounded-md bg-red-500 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
-                    hx-delete="/api/posts/{{.Document.PostSlug}}/documents/{{.Document.ID}}">Delete</button>
+                <button id="delete-document-button-{{.Document.ID}}"
+                    class="rounded-md bg-red-500 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
+                    Delete
+                </button>
                 {{end}}
             </div>
         </div>
@@ -222,9 +253,9 @@
 </div>
 <script>
     documentFilename["{{.Document.ID}}"] = document.getElementById("document-filename-{{.Document.ID}}")
-    documentView["{{.Document.ID}}"]= document.getElementById("document-view-{{.Document.ID}}")
+    documentView["{{.Document.ID}}"] = document.getElementById("document-view-{{.Document.ID}}")
 
-    documentFilename["{{.Document.ID}}"].addEventListener("click", function() {
+    documentFilename["{{.Document.ID}}"].addEventListener("click", function () {
         documentView["{{.Document.ID}}"].classList.toggle("hidden")
     });
 </script>
@@ -237,20 +268,20 @@
     documentContentAcceptButton["{{.Document.ID}}"] = document.getElementById("document-content-accept-button-{{.Document.ID}}")
     documentContentDiscardButton["{{.Document.ID}}"] = document.getElementById("document-content-discard-button-{{.Document.ID}}")
 
-    documentContentView["{{.Document.ID}}"].addEventListener("click", function() {
+    documentContentView["{{.Document.ID}}"].addEventListener("click", function () {
         documentContentTextarea["{{.Document.ID}}"].value = "{{.Document.ParseContent}}"
 
         documentContentView["{{.Document.ID}}"].classList.add("hidden");
         documentContentEdit["{{.Document.ID}}"].classList.remove("hidden");
     });
 
-    documentContentDiscardButton["{{.Document.ID}}"].addEventListener("click", function() {
+    documentContentDiscardButton["{{.Document.ID}}"].addEventListener("click", function () {
         documentContentView["{{.Document.ID}}"].classList.remove("hidden");
         documentContentEdit["{{.Document.ID}}"].classList.add("hidden");
     });
 
     documentContentUpdateForm = document.getElementById("document-content-update-{{.Document.ID}}")
-    documentContentUpdateForm.addEventListener("submit", function(event) {
+    documentContentUpdateForm.addEventListener("submit", function (event) {
         event.preventDefault();
 
         let text = documentContentTextarea["{{.Document.ID}}"].value
@@ -264,6 +295,17 @@
                 "Content-Type": "application/json"
             },
             body: JSON.stringify(body)
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload()
+            }
+        });
+    });
+
+    deleteDocumentButton["{{.Document.ID}}"] = document.getElementById("delete-document-button-{{.Document.ID}}")
+    deleteDocumentButton["{{.Document.ID}}"].addEventListener("click", function () {
+        fetch("/api/posts/{{.Document.PostSlug}}/documents/{{.Document.ID}}", {
+            method: "DELETE"
         }).then(response => {
             if (response.ok) {
                 window.location.reload()

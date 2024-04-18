@@ -13,11 +13,16 @@
     {{template "user-view" .User}}
 
     <script>
-        document.addEventListener("htmx:afterRequest", function (event) {
-            if (event.detail.target.id === "user-logout-button") {
-                window.location.href = "/"
-            }
-        })
+        let logoutButton = document.getElementById("user-logout-button");
+        logoutButton.addEventListener("click", function () {
+            fetch("/auth/logout", {
+                method: "GET"
+            }).then(response => {
+                if (response.ok) {
+                    window.location.href = "/"
+                }
+            });
+        });
     </script>
 </body>
 
@@ -41,7 +46,7 @@
                     </div>
                 </div>
                 <div>
-                    <button id="user-logout-button" class="bg-red-500 text-white px-4 py-2 rounded-lg" hx-get="/auth/logout">Logout</button>
+                    <button id="user-logout-button" class="bg-red-500 text-white px-4 py-2 rounded-lg">Logout</button>
                 </div>
             </div>
         </div>
