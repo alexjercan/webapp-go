@@ -10,6 +10,9 @@
 
 <body>
     <script>
+        let documentFilename = {};
+        let documentView = {};
+
         let documentContentTextarea = {};
 
         let documentContentView = {};
@@ -173,36 +176,45 @@
 {{end}}
 
 {{define "document-view"}}
-<div id="document-content-view-{{.Document.ID}}">
-    <div class="flex justify-between items-center">
-        <div>
-            <h3 class="text-sm font-semibold leading-6 text-gray-900">{{.Document.Filename}}</h3>
-            <pre class="mt-1 text-xs leading-5 text-gray-500">{{.Document.ParseContent}}</pre>
-        </div>
-        <div>
-            {{if .IsAuthor}}
-            <button id="delete-document-button"
-                class="rounded-md bg-red-500 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
-                hx-delete="/api/posts/{{.Document.PostSlug}}/documents/{{.Document.ID}}">Delete</button>
-            {{end}}
+<h3 id="document-filename-{{.Document.ID}}" class="text-sm font-semibold leading-6 text-gray-900">{{.Document.Filename}}</h3>
+<div id="document-view-{{.Document.ID}}" class="py-4 hidden">
+    <div id="document-content-view-{{.Document.ID}}">
+        <div class="flex justify-between items-center">
+            <div>
+                <pre class="mt-1 text-xs leading-5 text-gray-500">{{.Document.ParseContent}}</pre>
+            </div>
+            <div>
+                {{if .IsAuthor}}
+                <button id="delete-document-button"
+                    class="rounded-md bg-red-500 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+                    hx-delete="/api/posts/{{.Document.PostSlug}}/documents/{{.Document.ID}}">Delete</button>
+                {{end}}
+            </div>
         </div>
     </div>
-</div>
-<div id="document-content-edit-{{.Document.ID}}" class="hidden">
-    <form id="document-content-update-{{.Document.ID}}" class="flex justify-between space-x-4">
-        <div class="flex flex-grow space-x-4">
-            <textarea id="document-content-textarea-{{.Document.ID}}" name="content" rows="8"
-                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"></textarea>
-        </div>
-        <div class="flex items-center space-x-4">
-            <button id="document-content-accept-button-{{.Document.ID}}" type="submit"
-                class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Accept</button>
-            <button id="document-content-discard-button-{{.Document.ID}}" type="reset"
-                class="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Discard</button>
-        </div>
-    </form>
+    <div id="document-content-edit-{{.Document.ID}}" class="hidden">
+        <form id="document-content-update-{{.Document.ID}}" class="flex justify-between space-x-4">
+            <div class="flex flex-grow space-x-4">
+                <textarea id="document-content-textarea-{{.Document.ID}}" name="content" rows="8"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"></textarea>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="document-content-accept-button-{{.Document.ID}}" type="submit"
+                    class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Accept</button>
+                <button id="document-content-discard-button-{{.Document.ID}}" type="reset"
+                    class="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Discard</button>
+            </div>
+        </form>
+    </div>
 </div>
 <script>
+    documentFilename["{{.Document.ID}}"] = document.getElementById("document-filename-{{.Document.ID}}")
+    documentView["{{.Document.ID}}"]= document.getElementById("document-view-{{.Document.ID}}")
+
+    documentFilename["{{.Document.ID}}"].addEventListener("click", function() {
+        documentView["{{.Document.ID}}"].classList.toggle("hidden")
+    });
+
     documentContentTextarea["{{.Document.ID}}"] = document.getElementById("document-content-textarea-{{.Document.ID}}")
 
     documentContentView["{{.Document.ID}}"] = document.getElementById("document-content-view-{{.Document.ID}}")
