@@ -51,7 +51,7 @@ func main() {
 	bearerService := services.NewBearerService(cfg)
 	embeddingsService := services.NewEmbeddingsService(documentsRepository, embeddingRepository, llm, documentChan)
 
-	postsController := controllers.NewPostsController(postsRepository)
+	postsController := controllers.NewPostsController(postsRepository, usersRepository)
 	viewController := controllers.NewViewController(postsRepository, usersRepository, documentsRepository, embeddingsService)
 	authController := controllers.NewAuthController(cfg, authService, usersService, bearerService)
 	documentsController := controllers.NewDocumentsController(documentsRepository, postsRepository, documentChan)

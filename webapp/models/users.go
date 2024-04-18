@@ -24,3 +24,7 @@ func NewUser(u GitHubUser) User {
 func NewAnonymousUser() User {
 	return User{Name: "Anonymous", AvatarUrl: "https://avatars.githubusercontent.com/u/583231?v=4"}
 }
+
+func (this User) IsAnonymous() bool {
+    return this.GitHubUsername == nil
+}

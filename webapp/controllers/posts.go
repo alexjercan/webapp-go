@@ -20,11 +20,12 @@ type PostsController interface {
 }
 
 type postsController struct {
-	repo repositories.PostsRepository
+	postsRepo repositories.PostsRepository
+    usersRepo repositories.UsersRepository
 }
 
-func NewPostsController(repo repositories.PostsRepository) PostsController {
-	return postsController{repo}
+func NewPostsController(postsRepo repositories.PostsRepository, usersRepo repositories.UsersRepository) PostsController {
+	return postsController{postsRepo, usersRepo}
 }
 
 type PostGetQuery struct {
@@ -38,7 +39,7 @@ func (this postsController) GetPost(c *gin.Context) {
 		return
 	}
 
-	post, err := this.repo.GetPost(c, uuid.MustParse(query.Slug))
+	post, err := this.postsRepo.GetPost(c, uuid.MustParse(query.Slug))
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return
@@ -48,7 +49,7 @@ func (this postsController) GetPost(c *gin.Context) {
 }
 
 func (this postsController) GetPosts(c *gin.Context) {
-	posts, err := this.repo.GetPosts(c)
+	posts, err := this.postsRepo.GetPosts(c)
 
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
@@ -61,13 +62,24 @@ func (this postsController) GetPosts(c *gin.Context) {
 func (this postsController) CreatePost(c *gin.Context) {
 	userId := c.MustGet(middlewares.USER_ID_KEY).(uuid.UUID)
 
+    user, err := this.usersRepo.GetUser(c, userId)
+    if err != nil {
+        c.AbortWithError(http.StatusNotFound, err)
+        return
+    }
+
+    if user.IsAnonymous() {
+        c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+        return
+    }
+
 	dto := models.PostDTO{}
 	if err := c.ShouldBind(&dto); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	post, err := this.repo.CreatePost(c, models.NewPost(userId, dto))
+	post, err := this.postsRepo.CreatePost(c, models.NewPost(userId, dto))
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
@@ -89,7 +101,7 @@ func (this postsController) UpdatePost(c *gin.Context) {
 		return
 	}
 
-	post, err := this.repo.GetPost(c, uuid.MustParse(query.Slug))
+	post, err := this.postsRepo.GetPost(c, uuid.MustParse(query.Slug))
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return
@@ -106,7 +118,7 @@ func (this postsController) UpdatePost(c *gin.Context) {
 		return
 	}
 
-	post, err = this.repo.UpdatePost(c, post.Slug, models.NewPost(userId, dto))
+	post, err = this.postsRepo.UpdatePost(c, post.Slug, models.NewPost(userId, dto))
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -128,7 +140,7 @@ func (this postsController) DeletePost(c *gin.Context) {
 		return
 	}
 
-	post, err := this.repo.GetPost(c, uuid.MustParse(query.Slug))
+	post, err := this.postsRepo.GetPost(c, uuid.MustParse(query.Slug))
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return
@@ -139,7 +151,7 @@ func (this postsController) DeletePost(c *gin.Context) {
 		return
 	}
 
-	_, err = this.repo.DeletePost(c, post.Slug)
+	_, err = this.postsRepo.DeletePost(c, post.Slug)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
