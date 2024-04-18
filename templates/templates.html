@@ -16,8 +16,23 @@
             <div class="flex items-center">
                 <div class="relative ml-3">
                     <div class="flex items-center">
+                        {{if .User.IsAnonymous}}
                         <div class="flex items-center">
-                            <a href="/create"
+                            <button id="new-post-button" type="button" disabled
+                                class="rounded-md bg-gray-300 px-3 py-2 text-sm font-semibold text-gray-600 shadow-sm cursor-not-allowed">
+                                <div class="flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    <span class="ml-2">New Post</span>
+                                </div>
+                            </button>
+                        </div>
+                        {{else}}
+                        <div class="flex items-center">
+                            <button id="new-post-button" type="button"
                                 class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
                                 <div class="flex items-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
@@ -27,8 +42,9 @@
                                     </svg>
                                     <span class="ml-2">New Post</span>
                                 </div>
-                            </a>
+                            </button>
                         </div>
+                        {{end}}
 
                         <div class="ml-4">
                             <a href="/user" type="button"
@@ -43,5 +59,10 @@
         </div>
         {{end}}
     </div>
+    <script>
+        document.getElementById("new-post-button").addEventListener("click", function () {
+            window.location.href = "/create";
+        });
+    </script>
 </nav>
 {{end}}
