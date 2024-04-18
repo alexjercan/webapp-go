@@ -19,6 +19,7 @@ type CallbackQuery struct {
 }
 
 type AuthController interface {
+    Anonymous(c *gin.Context)
 	Login(c *gin.Context)
 	Callback(c *gin.Context)
 	Logout(c *gin.Context)
@@ -35,6 +36,29 @@ type authController struct {
 
 func NewAuthController(cfg config.Config, authService services.AuthService, usersService services.UsersService, bearerService services.BearerService) AuthController {
 	return authController{cfg, authService, usersService, bearerService}
+}
+
+func (this authController) Anonymous(c *gin.Context) {
+    slog.Debug("[Anonymous] Start")
+
+	// Create or update the user
+	user, err := this.usersService.CreateAnonymousUser(c)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	// Save the user ID in the session (logged in)
+	session := sessions.Default(c)
+	session.Set(middlewares.USER_ID_KEY, user.ID.String())
+	if err := session.Save(); err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+    slog.Debug("[Callback] User ID saved in session")
+
+	c.Redirect(http.StatusTemporaryRedirect, "/home")
 }
 
 func (this authController) Login(c *gin.Context) {

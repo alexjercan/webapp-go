@@ -53,7 +53,7 @@ func AuthRequired(bearerService services.BearerService) gin.HandlerFunc {
 			return
 		}
 
-		c.Redirect(http.StatusTemporaryRedirect, "/auth/login")
+		c.Redirect(http.StatusTemporaryRedirect, "/login")
 		c.Abort()
 		return
 	}

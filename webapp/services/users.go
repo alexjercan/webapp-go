@@ -10,6 +10,7 @@ import (
 
 type UsersService interface {
 	CreateOrUpdateUser(c context.Context, user models.GitHubUser) (models.User, error)
+	CreateAnonymousUser(c context.Context) (models.User, error)
 	GetUser(c context.Context, id uuid.UUID) (models.User, error)
 }
 
@@ -31,6 +32,13 @@ func (this usersService) CreateOrUpdateUser(c context.Context, user models.GitHu
 		u.Name = user.Name
 		u, err = this.usersRepository.UpdateUser(c, u.ID, u)
 	}
+
+	return
+}
+
+func (this usersService) CreateAnonymousUser(c context.Context) (u models.User, err error) {
+    u = models.NewAnonymousUser()
+    u, err = this.usersRepository.CreateUser(c, u)
 
 	return
 }

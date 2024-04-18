@@ -102,12 +102,14 @@ func main() {
 	authorized.GET("/api/bearer", authController.BearerToken)
 
 	router.GET("/", viewController.GetIndexPage)
+	router.GET("/login", viewController.GetLoginPage)
 	authorized.GET("/home", viewController.GetHomePage)
 	authorized.GET("/user", viewController.GetUserPage)
 	authorized.GET("/posts/:slug", viewController.GetPostPage)
 	authorized.GET("/create", viewController.GetCreatePostPage)
 	authorized.GET("/search/:slug", viewController.SearchPost)
 
+	router.GET("/auth/anonymous", authController.Anonymous)
 	router.GET("/auth/login", authController.Login)
 	router.GET("/auth/callback", authController.Callback)
 	authorized.GET("/auth/logout", authController.Logout)

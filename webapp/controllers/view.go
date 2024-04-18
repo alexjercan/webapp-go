@@ -15,6 +15,7 @@ import (
 
 type ViewController interface {
 	GetIndexPage(c *gin.Context)
+    GetLoginPage(c *gin.Context)
 	GetHomePage(c *gin.Context)
 	GetUserPage(c *gin.Context)
 	GetPostPage(c *gin.Context)
@@ -35,6 +36,10 @@ func NewViewController(postsRepo repositories.PostsRepository, usersRepo reposit
 
 func (this viewController) GetIndexPage(c *gin.Context) {
 	c.HTML(http.StatusOK, "index.html", gin.H{})
+}
+
+func (this viewController) GetLoginPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "login.html", gin.H{})
 }
 
 func (this viewController) GetHomePage(c *gin.Context) {
