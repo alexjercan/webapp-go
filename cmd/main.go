@@ -32,7 +32,7 @@ func main() {
 
 	defer db.Close()
 
-    slog.SetLogLoggerLevel(slog.LevelDebug)
+	slog.SetLogLoggerLevel(slog.LevelDebug)
 
 	llm, err := ollama.New(ollama.WithModel("llama2"))
 	if err != nil {

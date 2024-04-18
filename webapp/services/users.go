@@ -37,8 +37,8 @@ func (this usersService) CreateOrUpdateUser(c context.Context, user models.GitHu
 }
 
 func (this usersService) CreateAnonymousUser(c context.Context) (u models.User, err error) {
-    u = models.NewAnonymousUser()
-    u, err = this.usersRepository.CreateUser(c, u)
+	u = models.NewAnonymousUser()
+	u, err = this.usersRepository.CreateUser(c, u)
 
 	return
 }

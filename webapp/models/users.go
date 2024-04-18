@@ -26,5 +26,5 @@ func NewAnonymousUser() User {
 }
 
 func (this User) IsAnonymous() bool {
-    return this.GitHubUsername == nil
+	return this.GitHubUsername == nil
 }

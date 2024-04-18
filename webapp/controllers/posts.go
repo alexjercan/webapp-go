@@ -21,7 +21,7 @@ type PostsController interface {
 
 type postsController struct {
 	postsRepo repositories.PostsRepository
-    usersRepo repositories.UsersRepository
+	usersRepo repositories.UsersRepository
 }
 
 func NewPostsController(postsRepo repositories.PostsRepository, usersRepo repositories.UsersRepository) PostsController {
@@ -62,16 +62,16 @@ func (this postsController) GetPosts(c *gin.Context) {
 func (this postsController) CreatePost(c *gin.Context) {
 	userId := c.MustGet(middlewares.USER_ID_KEY).(uuid.UUID)
 
-    user, err := this.usersRepo.GetUser(c, userId)
-    if err != nil {
-        c.AbortWithError(http.StatusNotFound, err)
-        return
-    }
+	user, err := this.usersRepo.GetUser(c, userId)
+	if err != nil {
+		c.AbortWithError(http.StatusNotFound, err)
+		return
+	}
 
-    if user.IsAnonymous() {
-        c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-        return
-    }
+	if user.IsAnonymous() {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
 
 	dto := models.PostDTO{}
 	if err := c.ShouldBind(&dto); err != nil {

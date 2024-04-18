@@ -15,7 +15,7 @@ import (
 
 type ViewController interface {
 	GetIndexPage(c *gin.Context)
-    GetLoginPage(c *gin.Context)
+	GetLoginPage(c *gin.Context)
 	GetHomePage(c *gin.Context)
 	GetUserPage(c *gin.Context)
 	GetPostPage(c *gin.Context)
