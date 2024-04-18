@@ -161,6 +161,7 @@
         </div>
         {{end}}
     </div>
+    {{if .IsAuthor}}
     <div class="container mx-auto p-4 divide-y divide-gray-100">
         <div class="py-4">
             <h1 class="text-2xl font-bold text-gray-800">Settings</h1>
@@ -172,14 +173,12 @@
                 <input class="mt-2" id="post-file-input" type="file" name="file" multiple>
             </form>
         </div>
-
-        {{if .IsAuthor}}
         <div class="py-4">
             <a id="delete-post-button" type="button" hx-delete="/api/posts/{{.Post.Slug}}"
                 class="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Delete</a>
         </div>
-        {{end}}
     </div>
+    {{end}}
 </div>
 {{end}}
 
