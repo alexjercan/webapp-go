@@ -72,6 +72,13 @@
         document.getElementById("post-file-input").addEventListener("change", function() {
             htmx.trigger("#file-upload-form", "uploadFiles");
         });
+
+        let postName = document.getElementById("post-name")
+        let postDescription = document.getElementById("post-description")
+
+        postName.addEventListener("click", function() {
+            postDescriptionView.classList.toggle("hidden")
+        });
     </script>
 </body>
 
@@ -83,14 +90,14 @@
         <div class="py-4">
             <div class="flex justify-between items-center">
                 <div class="flex items-center">
-                    <h1 class="text-2xl font-bold text-gray-800">{{.Post.Name}}</h1>
+                    <h1 id="post-name" class="text-2xl font-bold text-gray-800">{{.Post.Name}}</h1>
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">Author: {{.Post.Author.Name}}</p>
                 </div>
             </div>
         </div>
-        <div class="py-4">
+        <div id="post-description" class="py-4">
             <div id="post-description-view">
                 <zero-md>
                     <script id="post-description-markdown" type="text/markdown">{{.Post.Description}}</script>
