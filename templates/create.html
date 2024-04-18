@@ -13,12 +13,6 @@
     {{template "post-create"}}
 
     <script>
-        document.addEventListener("htmx:afterRequest", function (event) {
-            if (event.detail.target.id === "post-create-form") {
-                window.location.href = "/home"
-            }
-        })
-
         document.getElementById("post-cancel-button").addEventListener("click", function () {
             window.location.href = "/home"
         })
@@ -29,6 +23,34 @@
             let text = textareaElement.value;
             descriptionPreview.innerHTML = text;
         });
+
+        let textNameInput = document.getElementById("post-name");
+        let textDescriptionInput = document.getElementById("post-description");
+
+        let postCreateForm = document.getElementById("post-create-form");
+        postCreateForm.addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            let body = {
+                name: textNameInput.value,
+                description: textDescriptionInput.value
+            };
+
+            fetch("/api/posts", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(body)
+            }).then(response => {
+                if (response.ok) {
+                    response.json().then(data => {
+                            console.log(data);
+                        window.location.href = "/posts/" + data.slug
+                    });
+                }
+            });
+        });
     </script>
 </body>
 
@@ -37,7 +59,7 @@
 {{define "post-create"}}
 <div class="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8">
     <div class="mx-auto max-w-2xl">
-        <form id="post-create-form" name="post-form" hx-post="/api/posts" hx-trigger="submit" hx-ext="json-enc">
+        <form id="post-create-form">
             <div class="space-y-12">
                 <div class="border-b border-gray-900/10 pb-12">
                     <h2 class="text-base font-semibold leading-7 text-gray-900">New Post</h2>
