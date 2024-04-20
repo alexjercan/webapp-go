@@ -1,16 +1,16 @@
 database:
-  host:
-  port:
-  user:
-  password:
-  database:
-  insecure:
+  host: database
+  port: 5432
+  user: postgres
+  password: mysecretpassword
+  database: postgres
+  insecure: true
 oauth:
-  clientId:
-  clientSecret:
-  redirectUri:
+  clientId: <client_id> # fill this in with your client id
+  clientSecret: <client_secret> # fill this in with your client secret
+  redirectUri: http://127.0.0.1:8080/auth/callback
 authStore:
-  name:
-  secret:
+  name: authStore
+  secret: mysecretpassword
 jwt:
-  secret:
+  secret: mysecretpassword

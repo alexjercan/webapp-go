@@ -1,0 +1,73 @@
+services:
+  database:
+    image: topg-postgres
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    networks:
+      - topg-db
+    volumes:
+      - topg-postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER_FILE: /run/secrets/database_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/database_password
+      POSTGRES_DB_FILE: /run/secrets/database_database
+    secrets:
+      - database_user
+      - database_password
+      - database_database
+
+  webapp:
+    image: topg-webapp
+    build:
+      context: .
+      dockerfile: Dockerfile.webapp
+    depends_on:
+      - database
+      - ollama
+    networks:
+      - topg-db
+      - topg-ollama
+    volumes:
+      - ./config.yaml:/app/config.yaml
+    ports:
+      - 8080:8080
+    environment:
+      CONFIG_PATH: /app/config.yaml
+      GIN_MODE: release
+
+  ollama:
+    image: ollama/ollama
+    networks:
+      - topg-ollama
+      - ollama-ui
+    volumes:
+      - ollama:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+networks:
+  topg-db:
+    external: false
+  topg-ollama:
+    external: false
+  ollama-ui:
+    external: false
+
+secrets:
+  database_user:
+    file: ./secrets/database_user
+  database_password:
+    file: ./secrets/database_password
+  database_database:
+    file: ./secrets/database_database
+
+volumes:
+  topg-postgres:
+  ollama:
+  ollama-webui:

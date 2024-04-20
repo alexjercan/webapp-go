@@ -7,11 +7,11 @@ use LLMs to retrieve information from them.
 
 ## Quickstart
 
+You will need to define the config.yaml and the secrets first. (They will be
+kept in the repo for teaching purposes, just copy paste the example config and
+fill in the github oauth stuff)
+
 ```console
-docker build -t postgres-uuid .
-docker run --rm -it -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 postgres-uuid
-go run cmd/migrations/main.go init
-go run cmd/migrations/main.go migrate
-go run cmd/main.go # or install and run `air`
+docker-compose up
 # open browser at `localhost:8080`
 ```
