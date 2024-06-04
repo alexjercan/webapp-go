@@ -36,13 +36,13 @@ func main() {
 		Name:  "TOP G WebApp",
 		Usage: "webapp-go is a web application for TOP G Document based RAG",
 		Commands: []*cli.Command{
-            newDbCommand(cfg),
-            newAppCommand(cfg),
+			newDbCommand(cfg),
+			newAppCommand(cfg),
 		},
 	}
 
 	if err := app.Run(os.Args); err != nil {
-        panic(err)
+		panic(err)
 	}
 }
 
@@ -221,21 +221,21 @@ func newDbCommand(cfg config.Config) *cli.Command {
 func newAppCommand(cfg config.Config) *cli.Command {
 	return &cli.Command{
 		Name:  "app",
-        Usage: "application commands",
+		Usage: "application commands",
 		Subcommands: []*cli.Command{
 			{
 				Name:  "run",
 				Usage: "run the application",
 				Action: func(_ *cli.Context) error {
-                    return runApp(cfg)
-                },
-            },
-        },
-    }
+					return runApp(cfg)
+				},
+			},
+		},
+	}
 }
 
 func runApp(cfg config.Config) error {
-    ctx := context.Background()
+	ctx := context.Background()
 
 	db := webapp.DBConnection(cfg)
 
@@ -245,7 +245,7 @@ func runApp(cfg config.Config) error {
 
 	llm, err := ollama.New(ollama.WithServerURL("http://ollama:11434"), ollama.WithModel("llama2"))
 	if err != nil {
-        return err
+		return err
 	}
 
 	documentChan := make(chan models.DocumentChanItem, 128)
@@ -325,5 +325,5 @@ func runApp(cfg config.Config) error {
 
 	router.Run(fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port))
 
-    return nil
+	return nil
 }

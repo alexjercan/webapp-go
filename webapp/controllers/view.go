@@ -139,7 +139,7 @@ func (this viewController) SearchPost(c *gin.Context) {
 		return
 	}
 
-	documents := []models.Document{}
+	documents := []models.DocumentSearchResult{}
 	for _, s := range searchResult.Scores {
 		d, err := this.documentsRepo.GetDocument(c, uuid.MustParse(params.Slug), s.DocumentID)
 		if err != nil {
@@ -147,7 +147,7 @@ func (this viewController) SearchPost(c *gin.Context) {
 			continue
 		}
 
-		documents = append(documents, d)
+		documents = append(documents, models.NewDocumentSearchResult(d.Filename, s.Score))
 	}
 
 	c.HTML(http.StatusOK, "search", gin.H{"Documents": documents, "Response": searchResult.Response})
