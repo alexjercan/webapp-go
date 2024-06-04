@@ -28,6 +28,10 @@ type Config struct {
 	JWT struct {
 		Secret string `yaml:"secret"`
 	} `yaml:"jwt"`
+    Ollama struct {
+        Url string `yaml:"url"`
+        Model string `yaml:"model"`
+    } `yaml:"ollama"`
 }
 
 func LoadConfig() (cfg Config, err error) {

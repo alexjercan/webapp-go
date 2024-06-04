@@ -3,7 +3,7 @@ services:
     image: topg-postgres
     build:
       context: .
-      dockerfile: Dockerfile.postgres
+      dockerfile: Dockerfile.postgresql
     networks:
       - topg-db
     volumes:

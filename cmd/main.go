@@ -243,7 +243,7 @@ func runApp(cfg config.Config) error {
 
 	slog.SetLogLoggerLevel(slog.LevelDebug)
 
-	llm, err := ollama.New(ollama.WithServerURL("http://ollama:11434"), ollama.WithModel("llama2"))
+	llm, err := ollama.New(ollama.WithServerURL(cfg.Ollama.Url), ollama.WithModel(cfg.Ollama.Model))
 	if err != nil {
 		return err
 	}

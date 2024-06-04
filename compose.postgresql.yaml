@@ -1,0 +1,29 @@
+services:
+  database:
+    image: topg-postgres
+    build:
+      context: .
+      dockerfile: Dockerfile.postgresql
+    ports:
+      - 5432:5432
+    volumes:
+      - topg-postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER_FILE: /run/secrets/database_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/database_password
+      POSTGRES_DB_FILE: /run/secrets/database_database
+    secrets:
+      - database_user
+      - database_password
+      - database_database
+
+secrets:
+  database_user:
+    file: ./secrets/database_user
+  database_password:
+    file: ./secrets/database_password
+  database_database:
+    file: ./secrets/database_database
+
+volumes:
+  topg-postgres:
