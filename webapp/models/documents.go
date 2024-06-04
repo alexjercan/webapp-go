@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -42,4 +43,8 @@ func (this Document) ParseContent() string {
 		log.Printf("Content type not supported: %s\n", this.ContentType)
 		return ""
 	}
+}
+
+func (this Document) FormatPrompt() string {
+	return fmt.Sprintf("Document Title: %s\nContent: %s\n", this.Filename, this.ParseContent())
 }

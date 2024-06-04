@@ -96,11 +96,11 @@ func (this embeddingsService) Worker(c context.Context) {
 }
 
 func (this embeddingsService) buildPrompt(question string, documents []models.Document) string {
-	prompt := "Based on the following context answer the given question as best as you can\n"
+	prompt := "You are given a list of documents as well as the file contents. Your task is to provide a useful response based on this knowledge: \n"
 
 	contents := []string{}
 	for _, d := range documents {
-		contents = append(contents, d.ParseContent())
+		contents = append(contents, d.FormatPrompt())
 	}
 	context := strings.Join(contents, "\n")
 
